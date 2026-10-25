@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
-    "playthrough": "node scripts/playthrough.mjs"
+    "playthrough": "node scripts/playthrough.mjs",
+    "balance": "BALANCE=1 vitest run src/core/balance.test.ts"
   },
   "devDependencies": {
     "playwright-core": "^1.64.1",

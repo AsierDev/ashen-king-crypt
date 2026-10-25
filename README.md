@@ -17,6 +17,7 @@ estático.
 | `npm run typecheck` | Comprobación de tipos con `tsc --noEmit`. |
 | `npm run build` | Build de producción en `dist/`. |
 | `npm run smoke -- Combat` / `npm run smoke -- flow` | Abre la build en Chrome headless y falla si hay errores de página (requiere `npm run build` antes y el puerto 4173 libre). |
+| `npm run balance` | Simula miles de partidas con el núcleo de reglas y muestra el % de victorias por estrategia (`BALANCE_RUNS=N` para cambiar el número). |
 | `npm run playthrough -- <url> <carpeta> [fate\|nofate]` | Juega una partida completa contra el servidor de desarrollo y guarda una captura por escena. |
 
 ## Semilla
