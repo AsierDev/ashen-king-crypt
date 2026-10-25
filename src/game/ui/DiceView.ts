@@ -70,10 +70,11 @@ export class DiceView {
     this.container.setVisible(true);
     this.d4Objects.forEach((o) => o.destroy());
     const r = 12;
-    const x = 84;
-    const tri = this.scene.add.triangle(x, 2, 0, r * 2, r, 0, r * 2, r * 2, COLORS.fate);
+    const x = 0;
+    const y = -38;
+    const tri = this.scene.add.triangle(x, y, 0, r * 2, r, 0, r * 2, r * 2, COLORS.fate);
     const label = this.scene.add
-      .text(x, 8, String(value), { fontFamily: FONT_UI, fontSize: '8px', color: '#0b0a10' })
+      .text(x, y + 6, String(value), { fontFamily: FONT_UI, fontSize: '8px', color: '#0b0a10' })
       .setOrigin(0.5);
     this.container.add([tri, label]);
     this.d4Objects = [tri, label];

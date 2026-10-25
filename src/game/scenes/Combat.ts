@@ -109,6 +109,7 @@ export class Combat extends Scene
             fontFamily: FONT_BODY,
             fontSize: '16px',
             color: COLORS.text,
+            wordWrap: { width: LAYOUT.width - LAYOUT.logX * 2 },
         });
         this.promptText = this.add.text(LAYOUT.promptX, LAYOUT.promptY, '', {
             fontFamily: FONT_BODY,

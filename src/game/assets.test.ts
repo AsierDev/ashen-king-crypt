@@ -14,14 +14,15 @@ describe('UNIT_ASSETS', () => {
     for (const asset of Object.values(UNIT_ASSETS)) {
       expect(asset.placeholder.width).toBeGreaterThan(0);
       expect(asset.placeholder.height).toBeGreaterThan(0);
-      expect(asset.barOffsetY).toBe(asset.placeholder.height + 10);
+      const body = asset.art ? Math.round(asset.art.bodyHeight * asset.art.scale) : asset.placeholder.height;
+      expect(asset.barOffsetY).toBe(body + 10);
     }
   });
 });
 
 describe('unitTextureKey', () => {
-  it('usa el placeholder cuando no hay sheet', () => {
-    expect(unitTextureKey('warrior', () => true)).toEqual({ key: 'placeholder-warrior', isPlaceholder: true });
+  it('usa el placeholder cuando la textura no ha cargado', () => {
+    expect(unitTextureKey('warrior', () => false)).toEqual({ key: 'placeholder-warrior', isPlaceholder: true });
   });
 
   it('usa la textura real solo si hay sheet y la textura existe', () => {

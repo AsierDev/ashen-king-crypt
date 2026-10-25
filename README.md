@@ -28,6 +28,9 @@ El parámetro `?seed=N` en la URL reproduce una partida .
 Los PNG normalizados van en `public/assets/sprites/<defId>/` con cuatro tiras horizontales: `idle.png`, `attack.png`,
 `hit.png` y `death.png`. Si falta un PNG, el juego usa un placeholder generado por código.
 
+Cada unidad declara en `src/game/assets.ts` el tamaño de frame y la caja visible del personaje (`bodyHeight`, `footPad`,
+`centerX`), medidas sobre la tira `idle`, y una escala. Así los pies quedan en el suelo y las barras encima de la cabeza.
+
 | `defId` | Unidad | Carpeta |
 |---|---|---|
 | `warrior` | Guerrero (Bran) | `public/assets/sprites/warrior/` |

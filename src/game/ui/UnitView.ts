@@ -19,6 +19,8 @@ export class UnitView {
   private readonly isHero: boolean;
   private readonly isPlaceholder: boolean;
   private readonly defId: string;
+  private readonly bodyHeight: number;
+  private readonly bodyWidth: number;
   private highlight: GameObjects.Rectangle | null = null;
   private highlightTween: Tweens.Tween | null = null;
 
@@ -35,11 +37,17 @@ export class UnitView {
     this.isPlaceholder = isPlaceholder;
     this.baseTint = isPlaceholder ? 0xffffff : (asset.tint ?? 0xffffff);
     this.sprite = scene.add.sprite(x, y, key).setOrigin(0.5, 1);
-    if (!isPlaceholder) {
+    if (!isPlaceholder && asset.art) {
+      const { sheet, footPad, centerX, scale } = asset.art;
+      const flip = combatant.side === 'enemy';
+      const originX = centerX / sheet.frameWidth;
+      this.sprite.flipX = flip;
+      this.sprite.setOrigin(flip ? 1 - originX : originX, 1 - footPad / sheet.frameHeight).setScale(scale);
       this.sprite.setTint(this.baseTint);
-      this.sprite.flipX = combatant.side === 'enemy';
       this.sprite.play(`${this.defId}-idle`);
     }
+    this.bodyHeight = asset.barOffsetY - 10;
+    this.bodyWidth = isPlaceholder ? asset.placeholder.width : Math.round(this.bodyHeight * 0.6);
 
     const barY = y - asset.barOffsetY;
     this.hpBg = scene.add.rectangle(x, barY, BAR_WIDTH, BAR_HEIGHT, COLORS.hpBg).setOrigin(0.5);
@@ -80,13 +88,9 @@ export class UnitView {
     this.highlightTween = null;
     this.highlight?.destroy();
     this.highlight = null;
-    this.sprite.off('pointerup');
-    if (!on) {
-      this.sprite.disableInteractive();
-      return;
-    }
-    const w = this.sprite.width + 6;
-    const h = this.sprite.height + 6;
+    if (!on) return;
+    const w = this.bodyWidth + 8;
+    const h = this.bodyHeight + 6;
     this.highlight = this.scene.add
       .rectangle(this.x, this.y + 3, w, h)
       .setOrigin(0.5, 1)
@@ -99,8 +103,8 @@ export class UnitView {
       repeat: -1,
     });
     if (onPick) {
-      this.sprite.setInteractive({ useHandCursor: true });
-      this.sprite.on('pointerup', onPick);
+      this.highlight.setInteractive({ useHandCursor: true });
+      this.highlight.on('pointerup', onPick);
     }
   }
 
@@ -126,7 +130,7 @@ export class UnitView {
 
   floatText(text: string, color: string, big = false): void {
     const label = this.scene.add
-      .text(this.x, this.y - this.sprite.height - 14, text, {
+      .text(this.x, this.y - this.bodyHeight - 44, text, {
         fontFamily: big ? FONT_UI : FONT_BODY,
         fontSize: '16px',
         color,
