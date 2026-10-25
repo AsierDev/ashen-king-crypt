@@ -14,6 +14,7 @@ import {
 } from '../../core/combat';
 import { finishEncounter, startEncounter } from '../../core/run';
 import type { ActionIntent, AbilityDef, CombatEvent, CombatState } from '../../core/types';
+import { playSfx } from '../audio';
 import { addCryptBackground } from '../background';
 import { getSession } from '../session';
 import { markScene } from '../smokeMarker';
@@ -226,10 +227,13 @@ export class Combat extends Scene
                 break;
             }
             case 'attackRolled':
+                playSfx('dice');
                 this.dice.showD20(e.rolls, e.kept, e.outcome);
                 await this.wait(TIMING.dice);
+                if (e.outcome === 'miss' || e.outcome === 'fumble') playSfx('miss');
                 break;
             case 'fateDieSpent':
+                playSfx('fate');
                 this.dice.showD4(e.value);
                 this.drawFate(e.remaining);
                 await this.wait(TIMING.fate);
@@ -238,6 +242,7 @@ export class Combat extends Scene
                 const view = this.units.get(e.targetId);
                 const target = getCombatant(this.combat, e.targetId);
                 if (!view) break;
+                playSfx(e.crit ? 'crit' : 'hit');
                 await view.flash();
                 view.setHp(e.hpAfter, target.maxHp);
                 view.floatText(`-${e.amount}`, COLORS.damage);
@@ -253,6 +258,7 @@ export class Combat extends Scene
                 const view = this.units.get(e.targetId);
                 const target = getCombatant(this.combat, e.targetId);
                 if (!view) break;
+                playSfx('heal');
                 view.setHp(e.hpAfter, target.maxHp);
                 view.floatText(`+${e.amount}`, COLORS.heal);
                 if (target.side === 'hero') this.setPartyHp(e.targetId, e.hpAfter);
@@ -272,6 +278,7 @@ export class Combat extends Scene
             case 'combatantDowned': {
                 const view = this.units.get(e.targetId);
                 if (!view) break;
+                playSfx('downed');
                 await view.playDowned();
                 if (getCombatant(this.combat, e.targetId).side === 'enemy') {
                     view.destroy();
@@ -288,6 +295,7 @@ export class Combat extends Scene
             }
             case 'combatEnded':
                 this.dice.hide();
+                playSfx(e.result === 'victory' ? 'victory' : 'defeat');
                 this.add
                     .text(LAYOUT.width / 2, 100, e.result === 'victory' ? TEXTS.labels.victoryTitle : TEXTS.labels.defeatTitle, {
                         fontFamily: FONT_UI,

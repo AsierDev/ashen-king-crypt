@@ -6,6 +6,7 @@ import { Narrative } from './scenes/Narrative';
 import { Combat } from './scenes/Combat';
 import { Interlude } from './scenes/Interlude';
 import { End } from './scenes/End';
+import { installMuteKey } from './audio';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -31,6 +32,8 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (parent: string) => {
+
+    installMuteKey();
 
     return new Game({ ...config, parent });
 

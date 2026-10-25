@@ -20,6 +20,11 @@ estático.
 | `npm run balance` | Simula miles de partidas con el núcleo de reglas y muestra el % de victorias por estrategia (`BALANCE_RUNS=N` para cambiar el número). |
 | `npm run playthrough -- <url> <carpeta> [fate\|nofate]` | Juega una partida completa contra el servidor de desarrollo y guarda una captura por escena. |
 
+## Sonido
+
+Efectos y ambiente sintetizados con Web Audio. Suenan tras pulsar Comenzar; la tecla `M` o el botón de la portada los
+silencian (el ajuste se recuerda en este navegador).
+
 ## Semilla
 
 El parámetro `?seed=N` en la URL reproduce una partida .

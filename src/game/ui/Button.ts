@@ -1,5 +1,6 @@
 import { GameObjects } from 'phaser';
 import type { Scene } from 'phaser';
+import { playSfx } from '../audio';
 import { COLORS, FONT_UI } from '../theme';
 
 export class TextButton extends GameObjects.Container {
@@ -34,7 +35,9 @@ export class TextButton extends GameObjects.Container {
     });
     this.background.on('pointerout', () => this.background.setStrokeStyle(1, COLORS.panelBorder));
     this.background.on('pointerup', () => {
-      if (this.enabled) onClick();
+      if (!this.enabled) return;
+      playSfx('click');
+      onClick();
     });
     scene.add.existing(this);
   }

@@ -23,3 +23,8 @@ Autor: Luiz Melo. Licencia: CC0 1.0 (no exige atribución; la damos igualmente).
 | `ghoul` | Necrófago | Monsters Creatures Fantasy (Goblin, teñido en el juego) | https://luizmelo.itch.io/monsters-creatures-fantasy |
 | `cultist` | Sectario | Evil Wizard | https://luizmelo.itch.io/evil-wizard |
 | `ashenKing` | Rey Ceniza | Medieval King Pack 2 (teñido en el juego) | https://luizmelo.itch.io/medieval-king-pack-2 |
+
+## Sonido
+
+Todo el sonido (efectos y ambiente) se sintetiza en el navegador con Web Audio (`src/game/audio.ts`); no hay ficheros
+de audio de terceros.

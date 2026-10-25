@@ -33,6 +33,8 @@ export const TEXTS = {
     restart: 'Volver a empezar',
     interlude: 'Interludio',
     interludeHint: 'Elige una opción:',
+    soundOn: 'Sonido: sí (M)',
+    soundOff: 'Sonido: no (M)',
     rest: 'Descansar',
     restDesc: 'Todo el grupo se cura (también los caídos) y recupera el Destino.',
     chooseAbility: '{name}: elige una habilidad.',
