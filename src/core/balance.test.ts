@@ -16,6 +16,9 @@ import { applyReward, applyRest, createRun, finishEncounter, rollRewardOffer, st
 import type { RewardDef, RunState } from './run';
 import type { ActionIntent, CombatState, CombatantState } from './types';
 
+// Solo se ejecuta bajo Vitest (Node); el proyecto no incluye @types/node.
+declare const process: { env: Record<string, string | undefined>; stdout: { write(text: string): void } };
+
 type HeroPolicy = 'naive' | 'smart';
 type InterludePolicy = 'alwaysRest' | 'neverRest' | 'mixed';
 
