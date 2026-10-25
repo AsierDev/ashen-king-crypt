@@ -35,7 +35,10 @@ export class Interlude extends Scene
         this.add.text(24, 56 + run.heroes.length * 20, `${TEXTS.labels.fate} ${run.fate.current}/${run.fate.max}`, body);
         this.add.text(320, 150, TEXTS.labels.interludeHint, body).setOrigin(0.5);
 
+        let chosen = false;
         const choose = (apply: () => void) => () => {
+            if (chosen) return;
+            chosen = true;
             apply();
             startTarget(this, afterInterludeTarget(run, CAMPAIGN));
         };

@@ -29,12 +29,18 @@ export class Narrative extends Scene
     {
         this.add.rectangle(0, 0, LAYOUT.width, LAYOUT.height, COLORS.bg).setOrigin(0);
         const { lines, next } = this.data0;
-        const button = new TextButton(this, 560, 320, 120, 28, TEXTS.labels.continue, () => startTarget(this, next));
+        let left = false;
+        const button = new TextButton(this, 560, 320, 120, 28, TEXTS.labels.continue, () => {
+            if (left) return;
+            left = true;
+            startTarget(this, next);
+        });
         button.setVisible(false);
 
+        let y = 110;
         lines.forEach((line, i) => {
             const text = this.add
-                .text(320, 110 + i * 36, line, {
+                .text(320, y, line, {
                     fontFamily: FONT_BODY,
                     fontSize: '16px',
                     color: COLORS.text,
@@ -43,6 +49,7 @@ export class Narrative extends Scene
                 })
                 .setOrigin(0.5, 0)
                 .setAlpha(0);
+            y += text.height + 12;
             this.tweens.add({
                 targets: text,
                 alpha: 1,

@@ -16,10 +16,12 @@ estático.
 | `npm test` | Tests del núcleo de reglas (Vitest). |
 | `npm run typecheck` | Comprobación de tipos con `tsc --noEmit`. |
 | `npm run build` | Build de producción en `dist/`. |
+| `npm run smoke -- Combat` / `npm run smoke -- flow` | Abre la build en Chrome headless y falla si hay errores de página (requiere `npm run build` antes y el puerto 4173 libre). |
+| `npm run playthrough -- <url> <carpeta> [fate\|nofate]` | Juega una partida completa contra el servidor de desarrollo y guarda una captura por escena. |
 
 ## Semilla
 
-El parámetro `?seed=N` en la URL reproduce una partida (disponible desde la Fase 3).
+El parámetro `?seed=N` en la URL reproduce una partida .
 
 ## Arte
 

@@ -34,7 +34,7 @@ export const TEXTS = {
     interlude: 'Interludio',
     interludeHint: 'Elige una opción:',
     rest: 'Descansar',
-    restDesc: 'El grupo recupera todos sus PG (también los caídos) y se rellenan los Dados de Destino.',
+    restDesc: 'Todo el grupo se cura (también los caídos) y recupera el Destino.',
     chooseAbility: '{name}: elige una habilidad.',
     chooseTarget: 'Elige un objetivo.',
     cancel: 'Cancelar',

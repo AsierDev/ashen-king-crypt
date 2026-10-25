@@ -114,7 +114,7 @@ export class Combat extends Scene
             fontFamily: FONT_BODY,
             fontSize: '16px',
             color: COLORS.text,
-            wordWrap: { width: 320 },
+            wordWrap: { width: LAYOUT.width - LAYOUT.promptX - 8 },
         });
         this.combat.combatants
             .filter((c) => c.side === 'hero')
@@ -336,6 +336,7 @@ export class Combat extends Scene
     {
         this.buttons.forEach((b) => b.destroy());
         this.buttons = [];
+        this.promptText.setText('');
         this.units.forEach((u) => u.setTargetable(false));
     }
 
