@@ -1,8 +1,6 @@
 import { Scene } from 'phaser';
 import type { Loader } from 'phaser';
 import { createUnitAnimations, ensurePlaceholders, queueUnitAssets } from '../assets';
-import { newSession, randomSeed } from '../session';
-import { parseSeed } from '../../core/rng';
 
 export class Preloader extends Scene
 {
@@ -38,7 +36,6 @@ export class Preloader extends Scene
     {
         ensurePlaceholders(this);
         createUnitAnimations(this);
-        newSession(parseSeed(window.location.search, randomSeed()));
-        this.scene.start('Combat');
+        this.scene.start('Title');
     }
 }

@@ -16,10 +16,21 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(`console.error
 async function waitScene(key, afterSeq = 0) {
   await page.waitForFunction(([k, n]) => document.body.dataset.scene === k && Number(document.body.dataset.sceneSeq ?? '0') > n, [key, afterSeq], { timeout: 10000 });
 }
+const seq = () => page.evaluate(() => Number(document.body.dataset.sceneSeq ?? '0'));
+async function clickAt(x, y) {
+  const box = await page.locator('canvas').boundingBox();
+  await page.mouse.click(box.x + x * box.width / 640, box.y + y * box.height / 360);
+}
 async function run() {
   await page.goto('http://localhost:4173/?seed=1');
-  await waitScene(mode);
-  await page.waitForTimeout(3000); // deja correr la iniciativa y los primeros turnos
+  if (mode !== 'flow') { await waitScene(mode); await page.waitForTimeout(3000); return; }
+  await waitScene('Title');
+  let n = await seq(); await clickAt(320, 250);
+  await waitScene('Narrative', n); await page.waitForTimeout(2500);
+  n = await seq(); await clickAt(560, 320);
+  await waitScene('Narrative', n); await page.waitForTimeout(2500);
+  n = await seq(); await clickAt(560, 320);
+  await waitScene('Combat', n); await page.waitForTimeout(3000);
 }
 let ok = false;
 try { await run(); ok = errors.length === 0 && (await page.locator('canvas').count()) === 1; }

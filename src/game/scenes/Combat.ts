@@ -14,7 +14,7 @@ import {
 } from '../../core/combat';
 import { finishEncounter, startEncounter } from '../../core/run';
 import type { ActionIntent, AbilityDef, CombatEvent, CombatState } from '../../core/types';
-import { getSession, newSession, randomSeed } from '../session';
+import { getSession } from '../session';
 import { markScene } from '../smokeMarker';
 import { COLORS, FONT_BODY, FONT_UI, LAYOUT, TIMING } from '../theme';
 import { TextButton } from '../ui/Button';
@@ -27,6 +27,7 @@ import {
   formatHeroStatus,
   formatTurnOrder,
 } from '../view/combatText';
+import { afterCombatTarget, startTarget } from '../view/flow';
 
 export class Combat extends Scene
 {
@@ -418,14 +419,6 @@ export class Combat extends Scene
         this.clearActions();
         const { run } = getSession();
         finishEncounter(run, this.combat, CAMPAIGN);
-        if (run.status === 'inProgress') {
-            this.scene.restart();
-            return;
-        }
-        this.promptText.setText('');
-        this.addButton(LAYOUT.width / 2, LAYOUT.buttonY, TEXTS.labels.restart, () => {
-            newSession(randomSeed());
-            this.scene.restart();
-        });
+        startTarget(this, afterCombatTarget(run));
     }
 }
