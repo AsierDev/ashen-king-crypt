@@ -13,3 +13,30 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+#game-container canvas {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#rotate-hint {
+    display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+    #rotate-hint {
+        display: block;
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        bottom: 24px;
+        padding: 12px;
+        border: 1px solid #5a4a6e;
+        background: #1c1726;
+        color: #e8e0d0;
+        font: 16px PixelifySans, monospace;
+        text-align: center;
+    }
+}

@@ -2,9 +2,10 @@ import { Scene } from 'phaser';
 import { CAMPAIGN } from '../../content/campaign';
 import { TEXTS } from '../../content/texts';
 import { parseSeed } from '../../core/rng';
+import { addCryptBackground } from '../background';
 import { getSession, newSession, randomSeed } from '../session';
 import { markScene } from '../smokeMarker';
-import { COLORS, FONT_BODY, FONT_UI, LAYOUT } from '../theme';
+import { COLORS, FONT_BODY, FONT_UI } from '../theme';
 import { TextButton } from '../ui/Button';
 import { introTarget, startTarget } from '../view/flow';
 
@@ -17,7 +18,7 @@ export class Title extends Scene
 
     create ()
     {
-        this.add.rectangle(0, 0, LAYOUT.width, LAYOUT.height, COLORS.wall).setOrigin(0);
+        addCryptBackground(this, 0.55);
         this.add
             .text(320, 120, TEXTS.gameTitle, {
                 fontFamily: FONT_UI,

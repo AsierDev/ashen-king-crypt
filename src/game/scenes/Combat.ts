@@ -14,6 +14,7 @@ import {
 } from '../../core/combat';
 import { finishEncounter, startEncounter } from '../../core/run';
 import type { ActionIntent, AbilityDef, CombatEvent, CombatState } from '../../core/types';
+import { addCryptBackground } from '../background';
 import { getSession } from '../session';
 import { markScene } from '../smokeMarker';
 import { COLORS, FONT_BODY, FONT_UI, LAYOUT, TIMING } from '../theme';
@@ -88,11 +89,7 @@ export class Combat extends Scene
 
     private drawBackground ()
     {
-        if (this.textures.exists('bg-crypt')) this.add.image(0, 0, 'bg-crypt').setOrigin(0);
-        else {
-            this.add.rectangle(0, 0, LAYOUT.width, LAYOUT.groundY, COLORS.wall).setOrigin(0);
-            this.add.rectangle(0, LAYOUT.groundY, LAYOUT.width, LAYOUT.panelY - LAYOUT.groundY, COLORS.floor).setOrigin(0);
-        }
+        addCryptBackground(this);
         this.add
             .rectangle(0, LAYOUT.panelY, LAYOUT.width, LAYOUT.height - LAYOUT.panelY, COLORS.panel)
             .setOrigin(0)
@@ -101,14 +98,17 @@ export class Combat extends Scene
 
     private createTexts (title: string)
     {
-        this.turnText = this.add.text(8, 4, '', { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.text });
+        this.turnText = this.add.text(8, 4, '', { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.text, stroke: '#0b0a10', strokeThickness: 3 });
         this.add
-            .text(632, 4, title, { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.textDim })
+            .text(632, 4, title, { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.textDim, stroke: '#0b0a10', strokeThickness: 3 })
             .setOrigin(1, 0);
         this.logText = this.add.text(LAYOUT.logX, LAYOUT.logY, '', {
             fontFamily: FONT_BODY,
             fontSize: '16px',
             color: COLORS.text,
+            stroke: '#0b0a10',
+            strokeThickness: 4,
+            lineSpacing: -4,
             wordWrap: { width: LAYOUT.width - LAYOUT.logX * 2 },
         });
         this.promptText = this.add.text(LAYOUT.promptX, LAYOUT.promptY, '', {

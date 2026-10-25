@@ -55,7 +55,7 @@ export class UnitView {
       .rectangle(x - BAR_WIDTH / 2, barY, BAR_WIDTH, BAR_HEIGHT, COLORS.hpFill)
       .setOrigin(0, 0.5);
     this.nameText = scene.add
-      .text(x, barY - 10, combatant.name, { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.text })
+      .text(x, barY - 10, combatant.name, { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.text, stroke: '#0b0a10', strokeThickness: 3 })
       .setOrigin(0.5);
     this.statusText = scene.add
       .text(x + BAR_WIDTH / 2 + 3, barY, '', { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.gold })
@@ -134,6 +134,8 @@ export class UnitView {
         fontFamily: big ? FONT_UI : FONT_BODY,
         fontSize: '16px',
         color,
+        stroke: '#0b0a10',
+        strokeThickness: 4,
       })
       .setOrigin(0.5);
     this.scene.tweens.add({
