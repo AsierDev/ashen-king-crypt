@@ -1,4 +1,8 @@
 import { Scene } from 'phaser';
+import type { Loader } from 'phaser';
+import { createUnitAnimations, ensurePlaceholders, queueUnitAssets } from '../assets';
+import { newSession, randomSeed } from '../session';
+import { parseSeed } from '../../core/rng';
 
 export class Preloader extends Scene
 {
@@ -23,10 +27,18 @@ export class Preloader extends Scene
     preload ()
     {
         this.load.setPath('assets');
+
+        this.load.font('PixelifySans', 'fonts/PixelifySans.ttf', 'truetype');
+        this.load.font('Silkscreen', 'fonts/Silkscreen-Regular.ttf', 'truetype');
+        queueUnitAssets(this.load);
+        this.load.on('loaderror', (file: Loader.File) => console.warn('Asset no cargado:', file.key));
     }
 
     create ()
     {
-        this.add.text(320, 180, 'La Cripta del Rey Ceniza', { fontFamily: 'monospace', fontSize: 16, color: '#e8e0d0' }).setOrigin(0.5);
+        ensurePlaceholders(this);
+        createUnitAnimations(this);
+        newSession(parseSeed(window.location.search, randomSeed()));
+        this.scene.start('Combat');
     }
 }

@@ -1,6 +1,7 @@
 import { Boot } from './scenes/Boot';
 import { AUTO, Game, Scale } from 'phaser';
 import { Preloader } from './scenes/Preloader';
+import { Combat } from './scenes/Combat';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -16,7 +17,8 @@ const config: Phaser.Types.Core.GameConfig = {
     },
     scene: [
         Boot,
-        Preloader
+        Preloader,
+        Combat
     ]
 };
 
