@@ -24,6 +24,7 @@ import { DiceView } from '../ui/DiceView';
 import { UnitView } from '../ui/UnitView';
 import {
   formatAbilityButton,
+  formatAbilityPrompt,
   formatEvent,
   formatFatePrompt,
   formatHeroStatus,
@@ -386,14 +387,14 @@ export class Combat extends Scene
     {
         const actor = getActive(this.combat);
         if (ability.target === 'singleEnemy' || ability.target === 'singleAlly') this.beginTargeting(ability);
-        else void this.act({ actorId: actor.id, abilityId: ability.id });
+        else void this.act({ actorId: actor.id, abilityId: ability.id }, formatAbilityPrompt(ability));
     }
 
     private beginTargeting (ability: AbilityDef)
     {
         this.clearActions();
         const actor = getActive(this.combat);
-        this.promptText.setText(TEXTS.labels.chooseTarget);
+        this.promptText.setText(formatAbilityPrompt(ability));
         for (const id of getValidTargets(this.combat, actor.id, ability.id)) {
             this.units.get(id)?.setTargetable(true, () => {
                 if (this.busy) return;
@@ -403,9 +404,10 @@ export class Combat extends Scene
         this.addButton(LAYOUT.buttonXs[2], LAYOUT.buttonRow2Y, TEXTS.labels.cancel, () => this.showHeroActions());
     }
 
-    private async act (intent: ActionIntent)
+    private async act (intent: ActionIntent, prompt = '')
     {
         this.clearActions();
+        if (prompt) this.promptText.setText(prompt);
         await this.playEvents(performAction(this.combat, intent, getSession().rng));
         void this.nextStep();
     }

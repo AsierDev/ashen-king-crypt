@@ -1,13 +1,17 @@
+import { SHIELD_AC_BONUS } from '../core/combat';
 import type { StatusId } from '../core/types';
 
 export function fill(template: string, vars: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in vars ? String(vars[key]) : match));
 }
 
-export const STATUS_LABELS: Record<StatusId, { name: string; short: string; positive: boolean }> = {
-  blessed: { name: 'Bendición', short: 'BEN', positive: true },
-  weakened: { name: 'Debilidad', short: 'DEB', positive: false },
-  shielded: { name: 'Protección', short: 'PRO', positive: true },
+export const STATUS_LABELS: Record<
+  StatusId,
+  { name: string; short: string; positive: boolean; effect: string }
+> = {
+  blessed: { name: 'Bendición', short: 'BEN', positive: true, effect: 'ataca con ventaja' },
+  weakened: { name: 'Debilidad', short: 'DEB', positive: false, effect: 'ataca con desventaja' },
+  shielded: { name: 'Protección', short: 'PRO', positive: true, effect: `+${SHIELD_AC_BONUS} CA` },
 };
 
 export const TEXTS = {
@@ -42,6 +46,7 @@ export const TEXTS = {
     restDesc: 'Cada héroe recupera 50 % de sus PG máx. + 1d6 (también los caídos). Destino +1.',
     chooseAbility: '{name}: elige una habilidad.',
     chooseTarget: 'Elige un objetivo.',
+    areaTag: '(área)',
     cancel: 'Cancelar',
     spendFate: 'Gastar d4',
     skipFate: 'No gastar',

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CAMPAIGN } from '../../content/campaign';
+import { TEXTS } from '../../content/texts';
 import { createRng } from '../../core/rng';
 import { createRun, startEncounter } from '../../core/run';
 import type { CombatEvent, CombatState } from '../../core/types';
 import {
   formatAbilityButton,
+  formatAbilityPrompt,
   formatEvent,
   formatFatePrompt,
   formatHeroStatus,
@@ -89,10 +91,16 @@ describe('formatEvent', () => {
 
   it('formats statuses', () => {
     expect(fmt({ type: 'statusApplied', targetId: 'warrior', status: 'blessed', duration: 2 })).toBe(
-      'Bran gana Bendición (2 turnos).',
+      'Bran gana Bendición (2 turnos): ataca con ventaja.',
     );
     expect(fmt({ type: 'statusApplied', targetId: 'warrior', status: 'weakened', duration: 2 })).toBe(
-      'Bran sufre Debilidad (2 turnos).',
+      'Bran sufre Debilidad (2 turnos): ataca con desventaja.',
+    );
+    expect(fmt({ type: 'statusApplied', targetId: 'skeleton-1', status: 'weakened', duration: 1 })).toBe(
+      'Esqueleto A sufre Debilidad (1 turno): ataca con desventaja.',
+    );
+    expect(fmt({ type: 'statusApplied', targetId: 'warrior', status: 'shielded', duration: 2 })).toBe(
+      'Bran gana Protección (2 turnos): +4 CA.',
     );
     expect(fmt({ type: 'statusExpired', targetId: 'warrior', status: 'blessed' })).toBe('Bran pierde Bendición.');
   });
@@ -129,6 +137,39 @@ describe('formatAbilityButton', () => {
     const slash = CAMPAIGN.abilities.find((a) => a.id === 'slash')!;
     expect(formatAbilityButton(brutal, 2)).toBe('Golpe Brutal (2)');
     expect(formatAbilityButton(slash)).toBe('Tajo');
+  });
+
+  it('marks area abilities', () => {
+    const fireball = CAMPAIGN.abilities.find((a) => a.id === 'fireball')!;
+    const powder = CAMPAIGN.abilities.find((a) => a.id === 'blindingPowder')!;
+    expect(formatAbilityButton(fireball, 1)).toBe('Bola de Fuego (área) (1)');
+    expect(formatAbilityButton(powder)).toBe('Polvo Cegador (área)');
+  });
+});
+
+describe('formatAbilityPrompt', () => {
+  const find = (id: string) => CAMPAIGN.abilities.find((a) => a.id === id)!;
+
+  it('asks for a target on single-target abilities', () => {
+    expect(formatAbilityPrompt(find('protect'))).toBe(
+      'Proteger: Un aliado gana Protección 2 turnos: +4 CA, los enemigos le aciertan menos. Elige un objetivo.',
+    );
+  });
+
+  it('omits the target request on area abilities', () => {
+    expect(formatAbilityPrompt(find('fireball'))).toBe(
+      'Bola de Fuego: Daña a todos los enemigos a la vez, sin tirada de ataque.',
+    );
+  });
+
+  it('fits in two prompt lines', () => {
+    for (const id of CAMPAIGN.heroes.flatMap((h) => h.abilityIds)) {
+      expect(formatAbilityPrompt(find(id)).length).toBeLessThanOrEqual(110);
+    }
+  });
+
+  it('keeps the rest description on one line', () => {
+    expect(TEXTS.labels.restDesc.length).toBeLessThanOrEqual(80);
   });
 });
 

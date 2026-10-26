@@ -4,7 +4,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'slash',
     name: 'Tajo',
-    description: 'Un tajo firme con la espada.',
+    description: 'Ataque con espada contra un enemigo.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 8, bonus: 3 },
@@ -12,7 +12,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'brutalStrike',
     name: 'Golpe Brutal',
-    description: 'Un golpe devastador. 2 usos por combate.',
+    description: 'Ataque con mucho más daño que Tajo. Guárdalo para enemigos duros.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 2, sides: 6, bonus: 3 },
@@ -21,7 +21,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'protect',
     name: 'Proteger',
-    description: 'Un aliado gana +4 CA durante 2 turnos.',
+    description: 'Un aliado gana Protección 2 turnos: +4 CA, los enemigos le aciertan menos.',
     target: 'singleAlly',
     roll: 'none',
     applyStatus: { status: 'shielded', duration: 2 },
@@ -30,7 +30,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'sacredMace',
     name: 'Maza Sagrada',
-    description: 'Un golpe bendecido con la maza.',
+    description: 'Ataque con maza contra un enemigo.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 6, bonus: 2 },
@@ -38,7 +38,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'cureWounds',
     name: 'Curar Heridas',
-    description: 'Cura a un aliado; puede levantar a un caído.',
+    description: 'Un aliado recupera PG. También levanta a un caído.',
     target: 'singleAlly',
     roll: 'none',
     heal: { count: 1, sides: 8, bonus: 3 },
@@ -48,7 +48,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'blessing',
     name: 'Bendición',
-    description: 'Ventaja en los ataques durante 2 turnos.',
+    description: 'Un aliado gana Bendición 2 turnos: ataca con ventaja (tira 2d20, usa el mayor).',
     target: 'singleAlly',
     roll: 'none',
     applyStatus: { status: 'blessed', duration: 2 },
@@ -57,7 +57,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'fireBolt',
     name: 'Saeta de Fuego',
-    description: 'Un dardo de fuego.',
+    description: 'Ataque de fuego a distancia contra un enemigo.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 10, bonus: 2 },
@@ -65,7 +65,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'magicMissile',
     name: 'Proyectil Mágico',
-    description: 'Impacta siempre. 2 usos por combate.',
+    description: 'Impacta siempre, sin tirada de ataque. Ideal para rematar.',
     target: 'singleEnemy',
     roll: 'none',
     damage: { count: 2, sides: 4, bonus: 2 },
@@ -74,7 +74,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'fireball',
     name: 'Bola de Fuego',
-    description: 'Daña a todos los enemigos. 1 uso por combate.',
+    description: 'Daña a todos los enemigos a la vez, sin tirada de ataque.',
     target: 'allEnemies',
     roll: 'none',
     damage: { count: 2, sides: 6, bonus: 0 },
@@ -91,7 +91,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'rottenClaws',
     name: 'Garras Pútridas',
-    description: 'Si impacta, causa Debilidad.',
+    description: 'Si impacta, causa Debilidad 2 turnos: desventaja en los ataques.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 6, bonus: 2 },
@@ -143,7 +143,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'dagger',
     name: 'Puñal',
-    description: 'Golpe furtivo: ventaja y +2d6 de daño si el objetivo sufre Debilidad.',
+    description: 'Ataque. Si el objetivo sufre Debilidad: golpe furtivo con ventaja y +2d6 de daño.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 6, bonus: 2 },
@@ -152,7 +152,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'hamstring',
     name: 'Corte Bajo',
-    description: 'Si impacta, causa Debilidad 2 turnos. 3 usos por combate.',
+    description: 'Si impacta, Debilidad 2 turnos: ataca con desventaja y prepara el Puñal.',
     target: 'singleEnemy',
     roll: 'attack',
     damage: { count: 1, sides: 4, bonus: 2 },
@@ -162,7 +162,7 @@ export const ABILITIES: AbilityDef[] = [
   {
     id: 'blindingPowder',
     name: 'Polvo Cegador',
-    description: 'Todos los enemigos sufren Debilidad 1 turno. 1 uso por combate.',
+    description: 'Todos los enemigos sufren Debilidad 1 turno: atacan con desventaja.',
     target: 'allEnemies',
     roll: 'none',
     applyStatus: { status: 'weakened', duration: 1 },

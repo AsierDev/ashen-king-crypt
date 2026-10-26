@@ -54,7 +54,8 @@ export function formatEvent(e: CombatEvent, state: CombatState): string | null {
     case 'statusApplied': {
       const label = STATUS_LABELS[e.status];
       const verb = label.positive ? 'gana' : 'sufre';
-      return `${nameOf(state, e.targetId)} ${verb} ${label.name} (${e.duration} turnos).`;
+      const turns = e.duration === 1 ? 'turno' : 'turnos';
+      return `${nameOf(state, e.targetId)} ${verb} ${label.name} (${e.duration} ${turns}): ${label.effect}.`;
     }
     case 'statusExpired':
       return `${nameOf(state, e.targetId)} pierde ${STATUS_LABELS[e.status].name}.`;
@@ -70,7 +71,15 @@ export function formatEvent(e: CombatEvent, state: CombatState): string | null {
 }
 
 export function formatAbilityButton(ability: AbilityDef, usesLeft?: number): string {
-  return usesLeft !== undefined ? `${ability.name} (${usesLeft})` : ability.name;
+  const area = ability.target === 'allEnemies' ? ` ${TEXTS.labels.areaTag}` : '';
+  return usesLeft !== undefined ? `${ability.name}${area} (${usesLeft})` : `${ability.name}${area}`;
+}
+
+export function formatAbilityPrompt(ability: AbilityDef): string {
+  const base = `${ability.name}: ${ability.description}`;
+  return ability.target === 'singleEnemy' || ability.target === 'singleAlly'
+    ? `${base} ${TEXTS.labels.chooseTarget}`
+    : base;
 }
 
 export function formatFatePrompt(state: CombatState): string {
