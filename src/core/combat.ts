@@ -12,6 +12,7 @@ import type {
   HeroDef,
   RollMode,
   Side,
+  StatusId,
 } from './types';
 
 export const MAX_ENEMIES = 4;
@@ -140,26 +141,32 @@ export function getCombatant(state: CombatState, id: string): CombatantState {
   return combatant;
 }
 
-function hasStatus(c: CombatantState, status: 'blessed' | 'weakened' | 'shielded'): boolean {
+function hasStatus(c: CombatantState, status: StatusId): boolean {
   return c.statuses.some((s) => s.status === status);
+}
+
+const NEGATIVE_STATUSES: StatusId[] = ['weakened', 'blinded'];
+
+export function isHindered(c: CombatantState): boolean {
+  return hasStatus(c, 'weakened') || hasStatus(c, 'blinded');
 }
 
 export function rollModeFor(c: CombatantState): RollMode {
   const blessed = hasStatus(c, 'blessed');
-  const weakened = hasStatus(c, 'weakened');
-  if (blessed === weakened) return 'normal';
+  const hindered = isHindered(c);
+  if (blessed === hindered) return 'normal';
   return blessed ? 'advantage' : 'disadvantage';
 }
 
 export function attackModeFor(actor: CombatantState, target: CombatantState, ability: AbilityDef): RollMode {
-  const advantage = hasStatus(actor, 'blessed') || isSneak(ability, target);
-  const disadvantage = hasStatus(actor, 'weakened');
+  const advantage = hasStatus(actor, 'blessed') || hasStatus(target, 'blinded') || isSneak(ability, target);
+  const disadvantage = isHindered(actor);
   if (advantage === disadvantage) return 'normal';
   return advantage ? 'advantage' : 'disadvantage';
 }
 
 function isSneak(ability: AbilityDef, target: CombatantState): boolean {
-  return ability.sneakDamage !== undefined && hasStatus(target, 'weakened');
+  return ability.sneakDamage !== undefined && isHindered(target);
 }
 
 export function effectiveAc(c: CombatantState): number {
@@ -232,6 +239,7 @@ export function performAction(state: CombatState, intent: ActionIntent, rng: Rng
   const events: CombatEvent[] = [
     { type: 'abilityUsed', actorId: actor.id, abilityId: ability.id, targetIds },
   ];
+  if (ability.cleansesSelf) cleanseSelf(actor, events);
 
   if (isSingle) {
     const ctx: ActionContext = {
@@ -246,11 +254,13 @@ export function performAction(state: CombatState, intent: ActionIntent, rng: Rng
 
   for (const targetId of targetIds) {
     const target = getCombatant(state, targetId);
+    const saved = ability.saveDc !== undefined && rollSave(target, ability.saveDc, rng, events);
     if (ability.damage) {
-      applyDamage(target, rollDice(rng, ability.damage).total + actor.damageBonus, false, events);
+      const total = rollDice(rng, ability.damage).total + actor.damageBonus;
+      applyDamage(target, saved ? Math.floor(total / 2) : total, false, events);
     }
     if (ability.heal) applyHeal(target, rollDice(rng, ability.heal).total, events);
-    applyStatus(target, ability, events);
+    if (!saved) applyStatus(target, ability, events);
     if (ability.summon) applySummon(state, actor, ability, events);
   }
   endTurn(state, events);
@@ -453,6 +463,22 @@ function applyStatus(target: CombatantState, ability: AbilityDef, events: Combat
   if (existing) existing.remaining = Math.max(existing.remaining, duration);
   else target.statuses.push({ status, remaining: duration });
   events.push({ type: 'statusApplied', targetId: target.id, status, duration });
+}
+
+/** Salvación de reflejos: d20 + bono de iniciativa contra la CD de la habilidad. */
+function rollSave(target: CombatantState, dc: number, rng: Rng, events: CombatEvent[]): boolean {
+  const roll = rollDie(rng, 20);
+  const total = roll + target.initiativeBonus;
+  const success = total >= dc;
+  events.push({ type: 'savingThrow', targetId: target.id, roll, bonus: target.initiativeBonus, total, dc, success });
+  return success;
+}
+
+function cleanseSelf(actor: CombatantState, events: CombatEvent[]): void {
+  for (const instance of actor.statuses.filter((s) => NEGATIVE_STATUSES.includes(s.status))) {
+    events.push({ type: 'statusExpired', targetId: actor.id, status: instance.status });
+  }
+  actor.statuses = actor.statuses.filter((s) => !NEGATIVE_STATUSES.includes(s.status));
 }
 
 function applySummon(state: CombatState, actor: CombatantState, ability: AbilityDef, events: CombatEvent[]): void {

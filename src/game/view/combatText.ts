@@ -33,6 +33,10 @@ export function formatEvent(e: CombatEvent, state: CombatState): string | null {
     }
     case 'sneakAttack':
       return `¡Golpe furtivo de ${nameOf(state, e.actorId)} contra ${nameOf(state, e.targetId)}!`;
+    case 'savingThrow':
+      return `${nameOf(state, e.targetId)} tira salvación: ${e.roll} + ${e.bonus} = ${e.total} contra CD ${e.dc}: ${
+        e.success ? '¡Salvado!' : 'Falla.'
+      }`;
     case 'attackRolled': {
       const prefix =
         e.mode === 'normal'

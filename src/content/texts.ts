@@ -12,6 +12,7 @@ export const STATUS_LABELS: Record<
   blessed: { name: 'Bendición', short: 'BEN', positive: true, effect: 'ataca con ventaja' },
   weakened: { name: 'Debilidad', short: 'DEB', positive: false, effect: 'ataca con desventaja' },
   shielded: { name: 'Protección', short: 'PRO', positive: true, effect: `+${SHIELD_AC_BONUS} CA` },
+  blinded: { name: 'Ceguera', short: 'CEG', positive: false, effect: 'ataca con desventaja y recibe ataques con ventaja' },
 };
 
 export const TEXTS = {
@@ -27,6 +28,7 @@ export const TEXTS = {
     ossuary: ['El Osario.', 'Paredes de cráneos. Algo hambriento escarba entre ellos.'],
     chapel: ['La Capilla Profanada.', 'Un sectario reza al trono vacío. Sus plegarias tienen respuesta.'],
     catacombs: ['Las Catacumbas.', 'El aire huele a ceniza. Más abajo ya se oyen pasos de hierro.'],
+    guard: ['La Guardia de Ceniza.', 'Ante las puertas del trono, un caballero de armadura ennegrecida alza su alabarda.'],
     throne: ['El Trono de Ceniza.', 'El Rey abre los ojos. «Habéis llegado lejos para morir aquí.»'],
   } as Record<string, string[]>,
   victory: ['El Rey Ceniza se deshace en polvo y brasas.', 'Las campanas callan. Valdeceniza verá el alba.'],

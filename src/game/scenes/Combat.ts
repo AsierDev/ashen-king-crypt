@@ -230,6 +230,9 @@ export class Combat extends Scene
             case 'sneakAttack':
                 this.units.get(e.targetId)?.floatText('Golpe furtivo', COLORS.gold);
                 break;
+            case 'savingThrow':
+                if (e.success) this.units.get(e.targetId)?.floatText('Salva', COLORS.gold);
+                break;
             case 'attackRolled':
                 playSfx('dice');
                 this.dice.showD20(e.rolls, e.kept, e.outcome);

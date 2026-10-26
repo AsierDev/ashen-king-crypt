@@ -6,6 +6,7 @@ export const ENCOUNTERS: EncounterDef[] = [
   { id: 'ossuary', title: 'El Osario', enemyIds: ['skeleton', 'skeleton', 'ghoul', 'ghoul'], isBoss: false },
   { id: 'chapel', title: 'La Capilla Profanada', enemyIds: ['cultist', 'skeleton', 'skeleton', 'skeleton'], isBoss: false },
   { id: 'catacombs', title: 'Las Catacumbas', enemyIds: ['ghoul', 'ghoul', 'cultist', 'skeleton'], isBoss: false },
+  { id: 'guard', title: 'La Guardia de Ceniza', enemyIds: ['ashenKnight', 'skeleton', 'skeleton'], isBoss: false },
   { id: 'throne', title: 'El Trono de Ceniza', enemyIds: ['ashenKing'], isBoss: true },
 ];
 
@@ -114,12 +115,10 @@ export const LEVELS: LevelDef[] = [
   {
     level: 3,
     xp: 400,
-    summary: '+1 al ataque para todos y PG máx. +5/+4/+3/+4.',
-    effects: [
-      ...['warrior', 'cleric', 'mage', 'rogue'].map((heroId) => ({ kind: 'attackBonus' as const, heroId, amount: 1 })),
-      ...levelHp,
-    ],
+    summary: '+1 al ataque para todos.',
+    effects: ['warrior', 'cleric', 'mage', 'rogue'].map((heroId) => ({ kind: 'attackBonus' as const, heroId, amount: 1 })),
   },
+  { level: 4, xp: 500, summary: 'PG máx.: Bran +5, Isolda +4, Teodric +3, Nerea +4.', effects: levelHp },
 ];
 
 export const CAMPAIGN: Campaign = {

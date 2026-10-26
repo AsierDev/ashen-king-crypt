@@ -102,6 +102,12 @@ describe('formatEvent', () => {
     expect(fmt({ type: 'statusApplied', targetId: 'warrior', status: 'shielded', duration: 2 })).toBe(
       'Bran gana Protección (2 turnos): +4 CA.',
     );
+    expect(fmt({ type: 'savingThrow', targetId: 'warrior', roll: 12, bonus: 1, total: 13, dc: 13, success: true })).toBe(
+      'Bran tira salvación: 12 + 1 = 13 contra CD 13: ¡Salvado!',
+    );
+    expect(fmt({ type: 'savingThrow', targetId: 'warrior', roll: 3, bonus: 1, total: 4, dc: 13, success: false })).toBe(
+      'Bran tira salvación: 3 + 1 = 4 contra CD 13: Falla.',
+    );
     expect(fmt({ type: 'statusExpired', targetId: 'warrior', status: 'blessed' })).toBe('Bran pierde Bendición.');
   });
 
@@ -158,7 +164,7 @@ describe('formatAbilityPrompt', () => {
 
   it('omits the target request on area abilities', () => {
     expect(formatAbilityPrompt(find('fireball'))).toBe(
-      'Bola de Fuego: Daña a todos los enemigos a la vez, sin tirada de ataque.',
+      'Bola de Fuego: Daña a todos los enemigos. Quien supere la salvación (CD 13) recibe la mitad.',
     );
   });
 

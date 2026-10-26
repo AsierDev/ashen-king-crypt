@@ -1,8 +1,8 @@
 export type Side = 'hero' | 'enemy';
-export type StatusId = 'blessed' | 'weakened' | 'shielded';
+export type StatusId = 'blessed' | 'weakened' | 'shielded' | 'blinded';
 export type TargetRule = 'singleEnemy' | 'allEnemies' | 'singleAlly' | 'self';
 export type RollMode = 'normal' | 'advantage' | 'disadvantage';
-export type AiProfile = 'lowestHp' | 'random' | 'summoner' | 'ashenKing';
+export type AiProfile = 'lowestHp' | 'random' | 'summoner' | 'ashenKing' | 'knight';
 export type AttackOutcome = 'hit' | 'crit' | 'miss' | 'fumble';
 export interface DiceExpr {
   count: number;
@@ -20,6 +20,8 @@ export interface AbilityDef {
   sneakDamage?: DiceExpr;
   heal?: DiceExpr;
   canRevive?: boolean;
+  cleansesSelf?: boolean;
+  saveDc?: number;
   applyStatus?: { status: StatusId; duration: number };
   summon?: { enemyId: string; count: number };
 }
@@ -99,6 +101,7 @@ export type CombatEvent =
   | { type: 'turnStarted'; actorId: string; round: number }
   | { type: 'abilityUsed'; actorId: string; abilityId: string; targetIds: string[] }
   | { type: 'sneakAttack'; actorId: string; targetId: string }
+  | { type: 'savingThrow'; targetId: string; roll: number; bonus: number; total: number; dc: number; success: boolean }
   | {
       type: 'attackRolled';
       actorId: string;

@@ -23,6 +23,7 @@ Autor: Luiz Melo. Licencia: CC0 1.0 (no exige atribución; la damos igualmente).
 | `skeleton` | Esqueleto | Monsters Creatures Fantasy | https://luizmelo.itch.io/monsters-creatures-fantasy |
 | `ghoul` | Necrófago | Monsters Creatures Fantasy (Goblin, teñido en el juego) | https://luizmelo.itch.io/monsters-creatures-fantasy |
 | `cultist` | Sectario | Evil Wizard | https://luizmelo.itch.io/evil-wizard |
+| `ashenKnight` | Caballero de Ceniza | Hero Knight (copia del sprite de Bran, teñida en el juego) | https://luizmelo.itch.io/hero-knight |
 | `ashenKing` | Rey Ceniza | Medieval King Pack 2 (teñido en el juego) | https://luizmelo.itch.io/medieval-king-pack-2 |
 
 ## Sonido

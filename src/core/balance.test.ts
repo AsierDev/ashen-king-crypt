@@ -1,6 +1,9 @@
 // Simulación de equilibrio: no corre en `npm test`. Uso: npm run balance
 // Referencia (2000 partidas, 2026-10-26; descanso 50 % + 1d6, IA con foco 60 %, 1 Dado de Destino por acción):
-//   smart/mixed 69.7 %, naive/mixed 1.2 % (antes del cambio: 70.1 % / 2.6 %). Rey Ceniza maxHp 130.
+//   smart/mixed 70.3 %, naive/mixed 3.0 %. Sinergias de héroes (Golpe Brutal derriba, Ceguera), IA enemiga coordinada,
+//   encuentro Guardia de Ceniza y Rey Ceniza (130 PG) que se sacude estados y debilita con la espada.
+//   Niveles: 2 (200 XP, PG), 3 (400, +1 ataque), 4 (500, PG). Áreas con salvación CD 13 (sin ella: 67.5 %).
+//   Sin la espada debilitante: 76.0 %. Antes de todo esto: 69.7 %.
 import { describe, expect, it } from 'vitest';
 import { CAMPAIGN } from '../content/campaign';
 import { runEnemyTurn } from './ai';
@@ -44,7 +47,7 @@ export function smartIntent(s: CombatState, actor: CombatantState): ActionIntent
   const valid = (abilityId: string, t: CombatantState) => getValidTargets(s, actor.id, abilityId).includes(t.id);
 
   if (actor.defId === 'rogue') {
-    const weakened = enemies.filter((c) => c.statuses.some((st) => st.status === 'weakened'));
+    const weakened = enemies.filter((c) => c.statuses.some((st) => st.status === 'weakened' || st.status === 'blinded'));
     if (weakened.length > 0) return act('dagger', lowest(weakened));
     if (enemies.length >= 3 && has(s, actor, 'blindingPowder')) return act('blindingPowder');
     if (has(s, actor, 'hamstring')) {

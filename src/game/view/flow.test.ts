@@ -26,7 +26,7 @@ describe('flow', () => {
   });
 
   it('afterInterludeTarget lleva al Trono en el encuentro 4', () => {
-    const run = { ...createRun(CAMPAIGN), encounterIndex: 4 };
+    const run = { ...createRun(CAMPAIGN), encounterIndex: CAMPAIGN.encounters.length - 1 };
     const t = afterInterludeTarget(run, CAMPAIGN);
     expect(t.key).toBe('Narrative');
     if (t.key !== 'Narrative') return;

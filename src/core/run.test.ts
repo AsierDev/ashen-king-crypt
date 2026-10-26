@@ -68,8 +68,8 @@ describe('content integrity', () => {
 
   it('defines heroes, encounters and texts', () => {
     expect(CAMPAIGN.heroes).toHaveLength(4);
-    expect(CAMPAIGN.encounters).toHaveLength(5);
-    expect(CAMPAIGN.encounters.map((e) => e.isBoss)).toEqual([false, false, false, false, true]);
+    expect(CAMPAIGN.encounters).toHaveLength(6);
+    expect(CAMPAIGN.encounters.map((e) => e.isBoss)).toEqual([false, false, false, false, false, true]);
     for (const encounter of CAMPAIGN.encounters) {
       expect(TEXTS.encounterIntro[encounter.id]).toBeDefined();
       expect(encounter.enemyIds.length).toBeLessThanOrEqual(4);
@@ -160,7 +160,7 @@ describe('finishEncounter', () => {
 
   it('wins after the boss encounter', () => {
     const run = createRun(CAMPAIGN);
-    run.encounterIndex = 4;
+    run.encounterIndex = CAMPAIGN.encounters.length - 1;
     finishEncounter(run, endedCombat('victory', run), CAMPAIGN);
     expect(run.status).toBe('won');
   });
@@ -181,6 +181,9 @@ describe('finishEncounter', () => {
     win(run);
     expect(run).toMatchObject({ xp: 400, level: 3 });
     expect(hero(run, 'warrior').attackBonus).toBe(6);
+    expect(hero(run, 'mage').maxHp).toBe(19);
+    win(run);
+    expect(run).toMatchObject({ xp: 500, level: 4 });
     expect(hero(run, 'mage').maxHp).toBe(22);
   });
 
@@ -197,7 +200,7 @@ describe('finishEncounter', () => {
 
   it('gives no xp for the boss or a defeat', () => {
     const boss = createRun(CAMPAIGN);
-    boss.encounterIndex = 4;
+    boss.encounterIndex = CAMPAIGN.encounters.length - 1;
     win(boss);
     expect(boss).toMatchObject({ status: 'won', xp: 0 });
     const lost = createRun(CAMPAIGN);
@@ -218,6 +221,8 @@ describe('nextLevelXp', () => {
     run.level = 2;
     expect(nextLevelXp(run, CAMPAIGN)).toBe(400);
     run.level = 3;
+    expect(nextLevelXp(run, CAMPAIGN)).toBe(500);
+    run.level = 4;
     expect(nextLevelXp(run, CAMPAIGN)).toBeNull();
   });
 });

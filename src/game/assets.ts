@@ -37,7 +37,7 @@ function art(frameWidth: number, frameHeight: number, bodyHeight: number, footPa
   return { sheet: { frameWidth, frameHeight }, bodyHeight, footPad, centerX, scale };
 }
 
-// Packs CC0 de LuizMelo (ver CREDITS.md). Clériga = Wizard Pack recoloreado (PNG propios); Necrófago = Goblin teñido. Pícara = Huntress.
+// Packs CC0 de LuizMelo (ver CREDITS.md). Clériga = Wizard Pack recoloreado (PNG propios); Necrófago = Goblin teñido. Pícara = Huntress. Caballero de Ceniza = Hero Knight teñido.
 export const UNIT_ASSETS: Record<string, UnitAsset> = {
   warrior: entry('warrior', 32, 56, 0x8a8f99, undefined, art(180, 180, 51, 66, 96, 1.1)),
   cleric: entry('cleric', 28, 52, 0xe6d27a, undefined, art(231, 190, 86, 49, 110, 0.75)),
@@ -46,6 +46,7 @@ export const UNIT_ASSETS: Record<string, UnitAsset> = {
   skeleton: entry('skeleton', 28, 52, 0xd8d2c0, undefined, art(150, 150, 51, 49, 82)),
   ghoul: entry('ghoul', 32, 44, 0x6f8a5a, 0x9fb39a, art(150, 150, 36, 49, 74, 1.25)),
   cultist: entry('cultist', 28, 54, 0x7a2e3a, undefined, art(150, 150, 58, 48, 71)),
+  ashenKnight: entry('ashenKnight', 32, 56, 0x5a5550, 0x9a8f88, art(180, 180, 51, 66, 96, 1.1)),
   ashenKing: entry('ashenKing', 48, 80, 0x5a5550, 0x8c8580, art(160, 111, 54, 6, 80.5, 1.5)),
 };
 

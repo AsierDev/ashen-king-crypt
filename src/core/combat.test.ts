@@ -47,6 +47,14 @@ const ABILITIES: Record<string, AbilityDef> = Object.fromEntries(
       heal: { count: 1, sides: 8, bonus: 3 },
     }),
     ability({ id: 'boom', target: 'allEnemies', roll: 'none', usesPerCombat: 1, damage: { count: 2, sides: 6, bonus: 0 } }),
+    ability({
+      id: 'burst',
+      target: 'allEnemies',
+      roll: 'none',
+      saveDc: 13,
+      damage: { count: 2, sides: 6, bonus: 0 },
+      applyStatus: { status: 'blinded', duration: 2 },
+    }),
     ability({ id: 'guard', target: 'singleAlly', roll: 'none', applyStatus: { status: 'shielded', duration: 2 } }),
     ability({ id: 'claw', target: 'singleEnemy', roll: 'attack', damage: { count: 1, sides: 6, bonus: 2 } }),
     ability({
@@ -63,7 +71,14 @@ const ABILITIES: Record<string, AbilityDef> = Object.fromEntries(
       usesPerCombat: 1,
       summon: { enemyId: 'skeleton', count: 1 },
     }),
-    ability({ id: 'wave', target: 'allEnemies', roll: 'none', usesPerCombat: 2, damage: { count: 1, sides: 6, bonus: 1 } }),
+    ability({
+      id: 'wave',
+      target: 'allEnemies',
+      roll: 'none',
+      usesPerCombat: 2,
+      cleansesSelf: true,
+      damage: { count: 1, sides: 6, bonus: 1 },
+    }),
     ability({
       id: 'call',
       target: 'self',
@@ -97,6 +112,7 @@ const HERO_A = hero('A', 28, 16, 1);
 const HERO_B = hero('B', 16, 12, 2);
 const HERO_C = hero('C', 20, 14, 0);
 const ROGUE: HeroDef = { ...hero('R', 18, 14, 3), abilityIds: ['stab'] };
+const BURSTER: HeroDef = { ...hero('A', 28, 16, 1), abilityIds: ['burst'] };
 
 const enemy = (
   id: string,
@@ -112,6 +128,8 @@ const ENEMY_DEFS: Record<string, EnemyDef> = Object.fromEntries(
     enemy('ghoul', 'Necrófago', 'lowestHp', ['rot']),
     enemy('rat', 'Rata', 'random', ['claw']),
     enemy('cultist', 'Sectario', 'summoner', ['claw', 'raise']),
+    enemy('warden', 'Guardián', 'summoner', ['claw', 'raise', 'guard']),
+    enemy('knight', 'Caballero', 'knight', ['claw', 'rot']),
     enemy('king', 'Rey Ceniza', 'ashenKing', ['strike', 'wave', 'call'], 60),
   ].map((e) => [e.id, e]),
 );
@@ -268,6 +286,59 @@ describe('ataques', () => {
       const events = strike(state, [12, 5]);
       expect(ofType(events, 'attackRolled')[0].mode).toBe('normal');
       expect(ofType(events, 'sneakAttack')).toHaveLength(0);
+    });
+  });
+
+  describe('ceguera', () => {
+    it('cualquier aliado ataca con ventaja a un objetivo ciego', () => {
+      const { state } = setup({});
+      getCombatant(state, 'skeleton-1').statuses = [{ status: 'blinded', remaining: 2 }];
+      const events = strike(state, [4, 16, 5]);
+      expect(ofType(events, 'attackRolled')[0]).toMatchObject({ mode: 'advantage', kept: 16 });
+      expect(ofType(events, 'sneakAttack')).toHaveLength(0);
+    });
+
+    it('el ciego ataca con desventaja y la Bendición lo compensa', () => {
+      const dis = setup({});
+      getCombatant(dis.state, 'A').statuses = [{ status: 'blinded', remaining: 2 }];
+      expect(ofType(strike(dis.state, [4, 16, 5]), 'attackRolled')[0]).toMatchObject({ mode: 'disadvantage', kept: 4 });
+
+      const both = setup({});
+      getCombatant(both.state, 'A').statuses = [
+        { status: 'blessed', remaining: 2 },
+        { status: 'blinded', remaining: 2 },
+      ];
+      expect(ofType(strike(both.state, [10, 5]), 'attackRolled')[0].mode).toBe('normal');
+    });
+
+    it('activa el golpe furtivo', () => {
+      const { state } = setup({ heroes: [ROGUE] });
+      getCombatant(state, 'skeleton-1').statuses = [{ status: 'blinded', remaining: 2 }];
+      const events = stab(state, [4, 16, 3, 4]);
+      expect(ofType(events, 'sneakAttack')).toHaveLength(1);
+      expect(ofType(events, 'damageDealt')[0].amount).toBe(9);
+    });
+  });
+
+  describe('salvación', () => {
+    it('quien salva recibe la mitad y resiste el estado; quien falla lo sufre entero', () => {
+      const { state } = setup({ heroes: [BURSTER], enemyIds: ['skeleton', 'skeleton'], init: [20, 1, 1] });
+      const [first, second] = state.combatants.filter((c) => c.side === 'enemy');
+      first.hp = second.hp = 40;
+      const events = performAction(state, { actorId: 'A', abilityId: 'burst' }, seq([11, 3, 4, 10, 6, 6]));
+      expect(ofType(events, 'savingThrow')).toEqual([
+        { type: 'savingThrow', targetId: first.id, roll: 11, bonus: 2, total: 13, dc: 13, success: true },
+        { type: 'savingThrow', targetId: second.id, roll: 10, bonus: 2, total: 12, dc: 13, success: false },
+      ]);
+      expect(ofType(events, 'damageDealt').map((e) => e.amount)).toEqual([3, 12]);
+      expect(first.statuses).toEqual([]);
+      expect(second.statuses).toEqual([{ status: 'blinded', remaining: 2 }]);
+    });
+
+    it('sin saveDc no hay salvación', () => {
+      const { state } = setup({});
+      const events = performAction(state, { actorId: 'A', abilityId: 'boom' }, seq([1, 2]));
+      expect(ofType(events, 'savingThrow')).toHaveLength(0);
     });
   });
 
@@ -656,6 +727,45 @@ describe('IA enemiga', () => {
     expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'king-1', abilityId: 'wave' });
     king.hp = 30;
     expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'king-1', abilityId: 'call' });
+  });
+
+  it('lowestHp remata primero al héroe debilitado', () => {
+    const { state } = setup({ init: [10, 10, 20] });
+    getCombatant(state, 'A').hp = 5;
+    getCombatant(state, 'B').statuses = [{ status: 'weakened', remaining: 2 }];
+    expect(chooseEnemyIntent(state, seq([])).targetId).toBe('B');
+  });
+
+  it('summoner sin hueco para invocar protege al aliado más robusto', () => {
+    const { state } = setup({ enemyIds: ['warden', 'skeleton'], init: [10, 10, 20, 1] });
+    const skeleton = state.combatants.find((c) => c.defId === 'skeleton')!;
+    getCombatant(state, 'warden-1').usesLeft.raise = 0;
+    skeleton.maxHp = 20;
+    expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'warden-1', abilityId: 'guard', targetId: skeleton.id });
+    skeleton.statuses = [{ status: 'shielded', remaining: 2 }];
+    getCombatant(state, 'warden-1').statuses = [{ status: 'shielded', remaining: 2 }];
+    expect(chooseEnemyIntent(state, seq([1])).abilityId).toBe('claw');
+  });
+
+  it('knight debilita a un héroe sano y luego remata al debilitado', () => {
+    const { state } = setup({ enemyIds: ['knight'], init: [10, 10, 20] });
+    getCombatant(state, 'A').statuses = [{ status: 'weakened', remaining: 2 }];
+    expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'knight-1', abilityId: 'rot', targetId: 'B' });
+    getCombatant(state, 'knight-1').usesLeft.rot = 0;
+    expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'knight-1', abilityId: 'claw', targetId: 'A' });
+  });
+
+  it('ashenKing se sacude la Debilidad y la Ceguera con la ola', () => {
+    const { state } = setup({ enemyIds: ['king'], init: [10, 10, 20] });
+    const king = getCombatant(state, 'king-1');
+    king.statuses = [
+      { status: 'blinded', remaining: 2 },
+      { status: 'shielded', remaining: 2 },
+    ];
+    expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'king-1', abilityId: 'wave' });
+    const events = runEnemyTurn(state, seq([3, 3]));
+    expect(ofType(events, 'statusExpired')[0]).toEqual({ type: 'statusExpired', targetId: 'king-1', status: 'blinded' });
+    expect(king.statuses.map((s) => s.status)).toEqual(['shielded']);
   });
 
   it('runEnemyTurn lanza si el activo es un héroe', () => {
