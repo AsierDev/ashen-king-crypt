@@ -247,7 +247,7 @@ export const ENEMIES: EnemyDef[] = [
   {
     id: 'ashenKing',
     name: 'Rey Ceniza',
-    maxHp: 115,
+    maxHp: 130,
     ac: 17,
     attackBonus: 9,
     initiativeBonus: 1,

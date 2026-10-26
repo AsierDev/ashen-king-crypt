@@ -1,4 +1,6 @@
 // Simulación de equilibrio: no corre en `npm test`. Uso: npm run balance
+// Referencia (2000 partidas, 2026-10-26; descanso 50 % + 1d6, IA con foco 60 %, 1 Dado de Destino por acción):
+//   smart/mixed 69.7 %, naive/mixed 1.2 % (antes del cambio: 70.1 % / 2.6 %). Rey Ceniza maxHp 130.
 import { describe, expect, it } from 'vitest';
 import { CAMPAIGN } from '../content/campaign';
 import { runEnemyTurn } from './ai';
