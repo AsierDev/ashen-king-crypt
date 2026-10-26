@@ -602,8 +602,8 @@ describe('intenciones inválidas', () => {
 describe('IA enemiga', () => {
   it('con foco ataca al más herido en proporción', () => {
     const { state } = setup({ init: [10, 10, 20] });
-    getCombatant(state, 'A').hp = 10;
-    getCombatant(state, 'B').hp = 10;
+    Object.assign(getCombatant(state, 'A'), { maxHp: 30, hp: 12 });
+    Object.assign(getCombatant(state, 'B'), { maxHp: 15, hp: 9 });
     expect(chooseEnemyIntent(state, seq([60]))).toEqual({
       actorId: 'skeleton-1',
       abilityId: 'claw',

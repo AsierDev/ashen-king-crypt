@@ -169,7 +169,7 @@ describe('formatAbilityPrompt', () => {
   });
 
   it('keeps the rest description on one line', () => {
-    expect(TEXTS.labels.restDesc.length).toBeLessThanOrEqual(80);
+    expect(TEXTS.labels.restDesc.length).toBeLessThanOrEqual(70);
   });
 });
 
