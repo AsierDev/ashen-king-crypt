@@ -31,6 +31,8 @@ export function formatEvent(e: CombatEvent, state: CombatState): string | null {
       }
       return `${actor} usa ${ability}.`;
     }
+    case 'sneakAttack':
+      return `¡Golpe furtivo de ${nameOf(state, e.actorId)} contra ${nameOf(state, e.targetId)}!`;
     case 'attackRolled': {
       const prefix =
         e.mode === 'normal'

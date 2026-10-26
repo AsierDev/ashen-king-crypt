@@ -71,6 +71,13 @@ const ABILITIES: Record<string, AbilityDef> = Object.fromEntries(
       usesPerCombat: 1,
       summon: { enemyId: 'skeleton', count: 2 },
     }),
+    ability({
+      id: 'stab',
+      target: 'singleEnemy',
+      roll: 'attack',
+      damage: { count: 1, sides: 4, bonus: 2 },
+      sneakDamage: { count: 1, sides: 6, bonus: 0 },
+    }),
     ability({ id: 'zap', target: 'singleEnemy', roll: 'none', damage: { count: 2, sides: 4, bonus: 2 } }),
   ].map((a) => [a.id, a]),
 );
@@ -89,6 +96,7 @@ const hero = (id: string, maxHp: number, ac: number, initiativeBonus: number): H
 const HERO_A = hero('A', 28, 16, 1);
 const HERO_B = hero('B', 16, 12, 2);
 const HERO_C = hero('C', 20, 14, 0);
+const ROGUE: HeroDef = { ...hero('R', 18, 14, 3), abilityIds: ['stab'] };
 
 const enemy = (
   id: string,
@@ -134,6 +142,8 @@ const ofType = <T extends CombatEvent['type']>(events: CombatEvent[], type: T) =
   events.filter((e): e is Extract<CombatEvent, { type: T }> => e.type === type);
 const strike = (state: CombatState, values: number[], targetId = 'skeleton-1') =>
   performAction(state, { actorId: 'A', abilityId: 'strike', targetId }, seq(values));
+const stab = (state: CombatState, values: number[]) =>
+  performAction(state, { actorId: 'R', abilityId: 'stab', targetId: 'skeleton-1' }, seq(values));
 const zap = (state: CombatState, actorId: string, values: number[]) =>
   performAction(state, { actorId, abilityId: 'zap', targetId: 'skeleton-1' }, seq(values));
 const claw = (state: CombatState, values: number[]) =>
@@ -198,6 +208,67 @@ describe('ataques', () => {
     const roll = ofType(strike(both.state, [10, 5]), 'attackRolled')[0];
     expect(roll.mode).toBe('normal');
     expect(roll.rolls).toHaveLength(1);
+  });
+
+  describe('golpe furtivo', () => {
+    const weakenedTarget = (s: CombatState) => {
+      getCombatant(s, 'skeleton-1').statuses = [{ status: 'weakened', remaining: 2 }];
+    };
+
+    it('da ventaja y daño extra contra un objetivo débil', () => {
+      const { state } = setup({ heroes: [ROGUE] });
+      weakenedTarget(state);
+      const events = stab(state, [4, 16, 3, 4]);
+      const types = events.map((e) => e.type);
+      expect(types.indexOf('sneakAttack')).toBe(types.indexOf('attackRolled') - 1);
+      expect(ofType(events, 'attackRolled')[0]).toMatchObject({ mode: 'advantage', kept: 16 });
+      expect(ofType(events, 'damageDealt')[0].amount).toBe(9);
+    });
+
+    it('sin Debilidad en el objetivo no hay golpe furtivo', () => {
+      const { state } = setup({ heroes: [ROGUE] });
+      const events = stab(state, [12, 3]);
+      expect(ofType(events, 'attackRolled')[0].mode).toBe('normal');
+      expect(ofType(events, 'sneakAttack')).toHaveLength(0);
+      expect(ofType(events, 'damageDealt')[0].amount).toBe(5);
+    });
+
+    it('la ventaja se anula con la Debilidad del actor', () => {
+      const { state } = setup({ heroes: [ROGUE] });
+      weakenedTarget(state);
+      getCombatant(state, 'R').statuses = [{ status: 'weakened', remaining: 2 }];
+      const events = stab(state, [10, 3, 4]);
+      const roll = ofType(events, 'attackRolled')[0];
+      expect(roll.mode).toBe('normal');
+      expect(roll.rolls).toHaveLength(1);
+      expect(ofType(events, 'sneakAttack')).toHaveLength(1);
+      expect(ofType(events, 'damageDealt')[0].amount).toBe(9);
+    });
+
+    it('duplica los dados furtivos en crítico', () => {
+      const { state } = setup({ heroes: [ROGUE] });
+      weakenedTarget(state);
+      const events = stab(state, [20, 5, 1, 2, 3, 4]);
+      expect(ofType(events, 'attackRolled')[0].outcome).toBe('crit');
+      expect(ofType(events, 'damageDealt')[0]).toMatchObject({ amount: 12, crit: true });
+    });
+
+    it('el Destino se ofrece con el daño total', () => {
+      const { state } = setup({ heroes: [ROGUE], fate: fate3() });
+      const skeleton = getCombatant(state, 'skeleton-1');
+      skeleton.hp = 40;
+      weakenedTarget(state);
+      stab(state, [4, 16, 3, 4]);
+      expect(state.pending).toMatchObject({ stage: 'damage', total: 9 });
+    });
+
+    it('una habilidad sin sneakDamage no se beneficia', () => {
+      const { state } = setup({});
+      weakenedTarget(state);
+      const events = strike(state, [12, 5]);
+      expect(ofType(events, 'attackRolled')[0].mode).toBe('normal');
+      expect(ofType(events, 'sneakAttack')).toHaveLength(0);
+    });
   });
 
   it('protección sube la CA', () => {

@@ -150,6 +150,17 @@ export function rollModeFor(c: CombatantState): RollMode {
   return blessed ? 'advantage' : 'disadvantage';
 }
 
+export function attackModeFor(actor: CombatantState, target: CombatantState, ability: AbilityDef): RollMode {
+  const advantage = hasStatus(actor, 'blessed') || isSneak(ability, target);
+  const disadvantage = hasStatus(actor, 'weakened');
+  if (advantage === disadvantage) return 'normal';
+  return advantage ? 'advantage' : 'disadvantage';
+}
+
+function isSneak(ability: AbilityDef, target: CombatantState): boolean {
+  return ability.sneakDamage !== undefined && hasStatus(target, 'weakened');
+}
+
 export function effectiveAc(c: CombatantState): number {
   return c.ac + (hasStatus(c, 'shielded') ? SHIELD_AC_BONUS : 0);
 }
@@ -257,11 +268,14 @@ function resolveSingle(
   let stage = startStage;
 
   if (stage === 'attack') {
-    const mode = rollModeFor(actor);
+    const mode = attackModeFor(actor, target, ability);
     const { rolls, kept } = rollD20(rng, mode);
     const total = kept + actor.attackBonus;
     const targetAc = effectiveAc(target);
     const outcome = kept === 20 ? 'crit' : kept === 1 ? 'fumble' : total >= targetAc ? 'hit' : 'miss';
+    if (isSneak(ability, target)) {
+      events.push({ type: 'sneakAttack', actorId: actor.id, targetId: target.id });
+    }
     events.push({
       type: 'attackRolled',
       actorId: actor.id,
@@ -296,7 +310,8 @@ function resolveSingle(
 
   if (stage === 'damage') {
     if (ability.damage) {
-      const total = rollDice(rng, ability.damage, ctx.crit).total + actor.damageBonus;
+      let total = rollDice(rng, ability.damage, ctx.crit).total + actor.damageBonus;
+      if (isSneak(ability, target)) total += rollDice(rng, ability.sneakDamage!, ctx.crit).total;
       if (canOfferFate(state, actor, 'damage', total, target)) {
         state.pending = {
           stage: 'damage',

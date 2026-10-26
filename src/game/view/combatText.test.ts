@@ -20,6 +20,12 @@ beforeEach(() => {
 const fmt = (e: CombatEvent) => formatEvent(e, state);
 
 describe('formatEvent', () => {
+  it('formats sneak attacks', () => {
+    expect(fmt({ type: 'sneakAttack', actorId: 'warrior', targetId: 'skeleton-1' })).toBe(
+      '¡Golpe furtivo de Bran contra Esqueleto A!',
+    );
+  });
+
   it('formats ability usage', () => {
     expect(fmt({ type: 'abilityUsed', actorId: 'warrior', abilityId: 'slash', targetIds: ['skeleton-1'] })).toBe(
       'Bran usa Tajo sobre Esqueleto A.',

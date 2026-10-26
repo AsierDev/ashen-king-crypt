@@ -17,6 +17,7 @@ export interface AbilityDef {
   roll: 'attack' | 'none';
   usesPerCombat?: number;
   damage?: DiceExpr;
+  sneakDamage?: DiceExpr;
   heal?: DiceExpr;
   canRevive?: boolean;
   applyStatus?: { status: StatusId; duration: number };
@@ -96,6 +97,7 @@ export type CombatEvent =
   | { type: 'initiativeRolled'; entries: { id: string; roll: number; total: number }[] }
   | { type: 'turnStarted'; actorId: string; round: number }
   | { type: 'abilityUsed'; actorId: string; abilityId: string; targetIds: string[] }
+  | { type: 'sneakAttack'; actorId: string; targetId: string }
   | {
       type: 'attackRolled';
       actorId: string;
