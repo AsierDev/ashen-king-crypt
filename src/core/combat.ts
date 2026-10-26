@@ -98,6 +98,7 @@ export function createCombat(
     round: 1,
     fate: params.fate,
     pending: null,
+    fateSpentThisAction: false,
     result: null,
     abilities: params.abilities,
     enemyDefs: params.enemyDefs,
@@ -197,10 +198,10 @@ export function canOfferFate(
   total: number,
   target: CombatantState,
 ): boolean {
-  if (actor.side !== 'hero' || state.fate.current <= 0) return false;
+  if (actor.side !== 'hero' || state.fate.current <= 0 || state.fateSpentThisAction) return false;
   switch (stage) {
     case 'attack':
-      return effectiveAc(target) - total <= state.fate.current * state.fate.sides;
+      return effectiveAc(target) - total <= state.fate.sides;
     case 'damage':
       return total < target.hp;
     case 'heal':
@@ -224,6 +225,7 @@ export function performAction(state: CombatState, intent: ActionIntent, rng: Rng
     throw new Error(`attack ability must target a single enemy: ${ability.id}`);
   }
 
+  state.fateSpentThisAction = false;
   if (actor.usesLeft[ability.id] !== undefined) actor.usesLeft[ability.id]--;
 
   const targetIds = isSingle ? [intent.targetId as string] : ability.target === 'self' ? [actor.id] : validTargets;
@@ -365,12 +367,12 @@ export function spendFateDie(state: CombatState, rng: Rng): CombatEvent[] {
   const pending = state.pending;
   if (pending === null) throw new Error('no pending fate decision');
   if (state.fate.current === 0) throw new Error('no fate dice left');
-  const actor = getCombatant(state, pending.actorId);
   const target = getCombatant(state, pending.targetId);
   const events: CombatEvent[] = [];
 
   const value = rollDie(rng, state.fate.sides);
   state.fate.current--;
+  state.fateSpentThisAction = true;
   pending.total += value;
   const { total, crit } = pending;
   const remaining = state.fate.current;
@@ -386,7 +388,6 @@ export function spendFateDie(state: CombatState, rng: Rng): CombatEvent[] {
       outcome,
       remaining,
     });
-    if (outcome === 'miss' && canOfferFate(state, actor, 'attack', total, target)) return events;
     state.pending = null;
     if (outcome === 'hit') resolveSingle(state, { ...contextOf(pending), crit: false }, 'damage', rng, events);
     else endTurn(state, events);
@@ -394,7 +395,6 @@ export function spendFateDie(state: CombatState, rng: Rng): CombatEvent[] {
   }
 
   events.push({ type: 'fateDieSpent', stage: pending.stage, value, total, remaining });
-  if (canOfferFate(state, actor, pending.stage, total, target)) return events;
   state.pending = null;
   if (pending.stage === 'damage') {
     applyDamage(target, total, crit, events);

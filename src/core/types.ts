@@ -88,6 +88,7 @@ export interface CombatState {
   round: number;
   fate: FatePool;
   pending: PendingRoll | null;
+  fateSpentThisAction: boolean;
   result: 'victory' | 'defeat' | null;
   abilities: Record<string, AbilityDef>;
   enemyDefs: Record<string, EnemyDef>;

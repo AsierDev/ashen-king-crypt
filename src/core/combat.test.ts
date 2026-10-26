@@ -289,7 +289,7 @@ describe('Dados de Destino', () => {
     expect(getActive(state).id).toBe('A');
   });
 
-  it('el Destino convierte el fallo y encadena la pausa de daño', () => {
+  it('el Destino convierte el fallo y el daño se aplica sin otra pausa', () => {
     const { state } = setup({ fate: fate3() });
     strike(state, [5]);
     const events = spendFateDie(state, seq([3, 6]));
@@ -302,23 +302,33 @@ describe('Dados de Destino', () => {
       outcome: 'hit',
       remaining: 2,
     });
-    expect(state.pending).toMatchObject({ stage: 'damage', total: 9 });
-    expect(ofType(events, 'damageDealt')).toHaveLength(0);
-    const declined = declineFate(state);
-    expect(ofType(declined, 'damageDealt')[0].amount).toBe(9);
+    expect(ofType(events, 'damageDealt')[0].amount).toBe(9);
     expect(state.pending).toBeNull();
     expect(getActive(state).id).not.toBe('A');
   });
 
-  it('un dado insuficiente deja el ataque pendiente y se puede rechazar', () => {
+  it('un dado insuficiente falla y termina el turno', () => {
     const { state } = setup({ fate: fate3() });
     strike(state, [5]);
     const events = spendFateDie(state, seq([1]));
     expect(events[0]).toMatchObject({ outcome: 'miss', total: 11, remaining: 2 });
+    expect(state.pending).toBeNull();
+    expect(last(events).type).toBe('turnStarted');
+  });
+
+  it('un fallo por más de un d4 no ofrece Destino aunque queden dados', () => {
+    const { state } = setup({ fate: fate3() });
+    strike(state, [3]);
+    expect(state.pending).toBeNull();
+    expect(getActive(state).id).not.toBe('A');
+  });
+
+  it('el límite se reinicia en la siguiente acción', () => {
+    const { state } = setup({ fate: fate3() });
+    strike(state, [5]);
+    spendFateDie(state, seq([1]));
+    performAction(state, { actorId: 'B', abilityId: 'strike', targetId: 'skeleton-1' }, seq([5]));
     expect(state.pending?.stage).toBe('attack');
-    const declined = declineFate(state);
-    expect(ofType(declined, 'damageDealt')).toHaveLength(0);
-    expect(last(declined).type).toBe('turnStarted');
   });
 
   it('se agota el Destino y el turno avanza solo', () => {
@@ -349,16 +359,15 @@ describe('Dados de Destino', () => {
     expect(hit.state.pending).toBeNull();
   });
 
-  it('pausa de daño', () => {
+  it('el Destino suma al daño una sola vez', () => {
     const { state } = setup({ fate: fate3() });
     strike(state, [12, 5]);
     expect(state.pending).toMatchObject({ stage: 'damage', total: 8 });
     const events = spendFateDie(state, seq([3]));
     expect(events[0]).toEqual({ type: 'fateDieSpent', stage: 'damage', value: 3, total: 11, remaining: 2 });
-    expect(state.pending).not.toBeNull();
-    const declined = declineFate(state);
-    expect(ofType(declined, 'damageDealt')[0].amount).toBe(11);
+    expect(ofType(events, 'damageDealt')[0].amount).toBe(11);
     expect(getCombatant(state, 'skeleton-1').hp).toBe(2);
+    expect(state.pending).toBeNull();
     expect(getActive(state).id).not.toBe('A');
   });
 
@@ -404,17 +413,15 @@ describe('Dados de Destino', () => {
     expect(state.pending).toBeNull();
   });
 
-  it('pausa de curación', () => {
+  it('el Destino suma a la curación una sola vez', () => {
     const { state } = setup({ fate: fate3() });
     getCombatant(state, 'B').hp = 4;
     performAction(state, { actorId: 'A', abilityId: 'heal', targetId: 'B' }, seq([5]));
     expect(state.pending).toMatchObject({ stage: 'heal', total: 8 });
-    spendFateDie(state, seq([3]));
-    expect(state.pending?.total).toBe(11);
-    const events = spendFateDie(state, seq([4]));
-    expect(ofType(events, 'healed')[0]).toMatchObject({ amount: 15, hpAfter: 16 });
+    const events = spendFateDie(state, seq([3]));
+    expect(ofType(events, 'healed')[0]).toMatchObject({ amount: 11, hpAfter: 15 });
     expect(state.pending).toBeNull();
-    expect(state.fate.current).toBe(1);
+    expect(state.fate.current).toBe(2);
   });
 
   it('sin pausa si la curación ya llena', () => {
@@ -593,15 +600,33 @@ describe('intenciones inválidas', () => {
 });
 
 describe('IA enemiga', () => {
-  it('lowestHp elige al primero en caso de empate', () => {
+  it('con foco ataca al más herido en proporción', () => {
     const { state } = setup({ init: [10, 10, 20] });
     getCombatant(state, 'A').hp = 10;
     getCombatant(state, 'B').hp = 10;
-    expect(chooseEnemyIntent(state, seq([]))).toEqual({
+    expect(chooseEnemyIntent(state, seq([60]))).toEqual({
       actorId: 'skeleton-1',
       abilityId: 'claw',
       targetId: 'A',
     });
+  });
+
+  it('con foco y empate elige al primero', () => {
+    const { state } = setup({ init: [10, 10, 20] });
+    expect(chooseEnemyIntent(state, seq([1])).targetId).toBe('A');
+  });
+
+  it('sin foco elige al azar', () => {
+    const { state } = setup({ init: [10, 10, 20] });
+    expect(chooseEnemyIntent(state, seq([61, 1])).targetId).toBe('B');
+  });
+
+  it('con un solo héroe vivo no consume RNG', () => {
+    const { state } = setup({ init: [10, 10, 20] });
+    const b = getCombatant(state, 'B');
+    b.downed = true;
+    b.hp = 0;
+    expect(chooseEnemyIntent(state, seq([])).targetId).toBe('A');
   });
 
   it('random elige según el RNG', () => {
@@ -615,7 +640,7 @@ describe('IA enemiga', () => {
     expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'cultist-1', abilityId: 'raise' });
     runEnemyTurn(state, seq([]));
     state.turnIndex = state.order.indexOf('cultist-1');
-    expect(chooseEnemyIntent(state, seq([]))).toEqual({
+    expect(chooseEnemyIntent(state, seq([1]))).toEqual({
       actorId: 'cultist-1',
       abilityId: 'claw',
       targetId: 'B',
@@ -626,7 +651,7 @@ describe('IA enemiga', () => {
     const { state } = setup({ heroes: [HERO_A, HERO_B, HERO_C], enemyIds: ['king'], init: [10, 10, 10, 20] });
     getCombatant(state, 'C').hp = 5;
     const king = getCombatant(state, 'king-1');
-    expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'king-1', abilityId: 'strike', targetId: 'C' });
+    expect(chooseEnemyIntent(state, seq([1]))).toEqual({ actorId: 'king-1', abilityId: 'strike', targetId: 'C' });
     king.turnsTaken = 1;
     expect(chooseEnemyIntent(state, seq([]))).toEqual({ actorId: 'king-1', abilityId: 'wave' });
     king.hp = 30;
