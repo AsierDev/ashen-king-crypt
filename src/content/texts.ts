@@ -16,7 +16,7 @@ export const TEXTS = {
   intro: [
     'Hace siete inviernos, el Rey Ceniza fue sepultado bajo la aldea de Valdeceniza.',
     'Anoche, las campanas de la cripta sonaron solas. Los muertos caminan otra vez.',
-    'Bran, Isolda y Teodric descienden con antorchas. Si fracasan, nadie verá el alba.',
+    'Bran, Isolda, Teodric y Nerea descienden con antorchas. Si fracasan, nadie verá el alba.',
   ],
   encounterIntro: {
     antechamber: ['La Antesala.', 'Huesos que crujen se levantan del polvo para cerraros el paso.'],

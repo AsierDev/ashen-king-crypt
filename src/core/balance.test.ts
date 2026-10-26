@@ -1,11 +1,12 @@
 // Simulación de equilibrio: no corre en `npm test`. Uso: npm run balance
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CAMPAIGN } from '../content/campaign';
 import { runEnemyTurn } from './ai';
 import {
   declineFate,
   getActive,
   getAvailableAbilities,
+  getCombatant,
   getValidTargets,
   performAction,
   spendFateDie,
@@ -30,7 +31,7 @@ const has = (s: CombatState, actor: CombatantState, id: string) =>
   getAvailableAbilities(s, actor.id).some((a) => a.id === id);
 const lowest = (cs: CombatantState[]) => [...cs].sort((a, b) => a.hp - b.hp)[0];
 
-function smartIntent(s: CombatState, actor: CombatantState): ActionIntent {
+export function smartIntent(s: CombatState, actor: CombatantState): ActionIntent {
   const enemies = alive(s, 'enemy');
   const allies = s.combatants.filter((c) => c.side === 'hero');
   const act = (abilityId: string, target?: CombatantState): ActionIntent => ({
@@ -40,6 +41,16 @@ function smartIntent(s: CombatState, actor: CombatantState): ActionIntent {
   });
   const valid = (abilityId: string, t: CombatantState) => getValidTargets(s, actor.id, abilityId).includes(t.id);
 
+  if (actor.defId === 'rogue') {
+    const weakened = enemies.filter((c) => c.statuses.some((st) => st.status === 'weakened'));
+    if (weakened.length > 0) return act('dagger', lowest(weakened));
+    if (enemies.length >= 3 && has(s, actor, 'blindingPowder')) return act('blindingPowder');
+    if (has(s, actor, 'hamstring')) {
+      const healthiest = enemies.reduce((best, c) => (c.hp > best.hp ? c : best));
+      return act('hamstring', healthiest);
+    }
+    return act('dagger', lowest(enemies));
+  }
   if (actor.defId === 'cleric') {
     const downed = allies.find((c) => c.downed);
     if (downed && has(s, actor, 'cureWounds') && valid('cureWounds', downed)) return act('cureWounds', downed);
@@ -56,13 +67,15 @@ function smartIntent(s: CombatState, actor: CombatantState): ActionIntent {
     if (target.hp <= 8 && has(s, actor, 'magicMissile')) return act('magicMissile', target);
     return act('fireBolt', target);
   }
-  // warrior
-  const fragile = lowest(allies.filter((c) => !c.downed && c.id !== actor.id && hpRatio(c) < 0.5));
-  if (fragile && enemies.length >= 2 && has(s, actor, 'protect') && !fragile.statuses.some((st) => st.status === 'shielded'))
-    return act('protect', fragile);
-  const target = lowest(enemies);
-  if (has(s, actor, 'brutalStrike') && (target.hp > 9 || enemies.length === 1)) return act('brutalStrike', target);
-  return act('slash', target);
+  if (actor.defId === 'warrior') {
+    const fragile = lowest(allies.filter((c) => !c.downed && c.id !== actor.id && hpRatio(c) < 0.5));
+    if (fragile && enemies.length >= 2 && has(s, actor, 'protect') && !fragile.statuses.some((st) => st.status === 'shielded'))
+      return act('protect', fragile);
+    const target = lowest(enemies);
+    if (has(s, actor, 'brutalStrike') && (target.hp > 9 || enemies.length === 1)) return act('brutalStrike', target);
+    return act('slash', target);
+  }
+  throw new Error(`smartIntent: sin política para ${actor.defId}`);
 }
 
 function naiveIntent(s: CombatState, actor: CombatantState): ActionIntent {
@@ -131,5 +144,15 @@ describe.skipIf(!process.env.BALANCE)('balance', () => {
       }
     }
     process.stdout.write(`\n${RUNS} partidas por fila\n${rows.join("\n")}\n`);
+  });
+});
+
+describe('smartIntent', () => {
+  it('tiene política para cada héroe de la campaña', () => {
+    const { combat } = startEncounter(createRun(CAMPAIGN), CAMPAIGN, createRng(1));
+    for (const def of CAMPAIGN.heroes) {
+      const intent = smartIntent(combat, getCombatant(combat, def.id));
+      expect(def.abilityIds).toContain(intent.abilityId);
+    }
   });
 });

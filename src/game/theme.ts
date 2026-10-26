@@ -29,9 +29,10 @@ export const LAYOUT = {
   logY: 22,
   logLines: 4,
   heroSlots: [
-    { x: 250, y: 214 },
-    { x: 180, y: 206 },
-    { x: 110, y: 214 },
+    { x: 272, y: 214 },
+    { x: 210, y: 206 },
+    { x: 148, y: 214 },
+    { x: 86, y: 206 },
   ],
   enemySlots: [
     { x: 390, y: 214 },
@@ -43,7 +44,7 @@ export const LAYOUT = {
   panelY: 236,
   partyX: 12,
   partyY: 244,
-  partyRowH: 20,
+  partyRowH: 16,
   fateY: 316,
   promptX: 168,
   promptY: 244,

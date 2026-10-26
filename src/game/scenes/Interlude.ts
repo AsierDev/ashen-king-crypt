@@ -30,9 +30,9 @@ export class Interlude extends Scene
         const body = { fontFamily: FONT_BODY, fontSize: '16px', color: COLORS.text };
         run.heroes.forEach((p, i) => {
             const name = CAMPAIGN.heroes.find((h) => h.id === p.heroId)!.name;
-            this.add.text(24, 56 + i * 20, formatHeroStatus({ name, hp: p.hp, maxHp: p.maxHp }), body);
+            this.add.text(i % 2 === 0 ? 24 : 330, 58 + Math.floor(i / 2) * 20, formatHeroStatus({ name, hp: p.hp, maxHp: p.maxHp }), body);
         });
-        this.add.text(24, 56 + run.heroes.length * 20, `${TEXTS.labels.fate} ${run.fate.current}/${run.fate.max}`, body);
+        this.add.text(24, 58 + Math.ceil(run.heroes.length / 2) * 20, `${TEXTS.labels.fate} ${run.fate.current}/${run.fate.max}`, body);
         this.add.text(320, 150, TEXTS.labels.interludeHint, body).setOrigin(0.5);
 
         let chosen = false;

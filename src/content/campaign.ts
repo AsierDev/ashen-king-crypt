@@ -78,7 +78,26 @@ export const REWARDS: RewardDef[] = [
       { kind: 'maxHp', heroId: 'warrior', amount: 2 },
       { kind: 'maxHp', heroId: 'cleric', amount: 2 },
       { kind: 'maxHp', heroId: 'mage', amount: 2 },
+      { kind: 'maxHp', heroId: 'rogue', amount: 2 },
       { kind: 'healAll', amount: 12 },
+    ],
+  },
+  {
+    id: 'rogueEdge',
+    name: 'Filo Envenenado',
+    description: 'Nerea: +1 al ataque y +2 al daño.',
+    effects: [
+      { kind: 'attackBonus', heroId: 'rogue', amount: 1 },
+      { kind: 'damageBonus', heroId: 'rogue', amount: 2 },
+    ],
+  },
+  {
+    id: 'rogueCloak',
+    name: 'Capa de Sombras',
+    description: 'Nerea: +1 CA y +6 PG máximos.',
+    effects: [
+      { kind: 'ac', heroId: 'rogue', amount: 1 },
+      { kind: 'maxHp', heroId: 'rogue', amount: 6 },
     ],
   },
 ];

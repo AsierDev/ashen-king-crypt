@@ -65,7 +65,7 @@ describe('content integrity', () => {
   });
 
   it('defines heroes, encounters and texts', () => {
-    expect(CAMPAIGN.heroes).toHaveLength(3);
+    expect(CAMPAIGN.heroes).toHaveLength(4);
     expect(CAMPAIGN.encounters).toHaveLength(5);
     expect(CAMPAIGN.encounters.map((e) => e.isBoss)).toEqual([false, false, false, false, true]);
     for (const encounter of CAMPAIGN.encounters) {
@@ -90,7 +90,7 @@ describe('content integrity', () => {
 describe('createRun', () => {
   it('starts with full health and the initial fate pool', () => {
     const run = createRun(CAMPAIGN);
-    expect(run.heroes.map((h) => h.hp)).toEqual([28, 22, 16]);
+    expect(run.heroes.map((h) => h.hp)).toEqual([28, 22, 16, 18]);
     expect(run.fate).toEqual({ current: 3, max: 3, sides: 4 });
     expect(run.encounterIndex).toBe(0);
     expect(run.status).toBe('inProgress');
@@ -101,7 +101,7 @@ describe('startEncounter', () => {
   it('builds the first combat from the run', () => {
     const run = createRun(CAMPAIGN);
     const { combat } = startEncounter(run, CAMPAIGN, createRng(1));
-    expect(combat.combatants).toHaveLength(5);
+    expect(combat.combatants).toHaveLength(6);
     const enemies = combat.combatants.filter((c) => c.side === 'enemy');
     expect(enemies.map((c) => c.id)).toEqual(['skeleton-1', 'skeleton-2']);
     expect(enemies.map((c) => c.name)).toEqual(['Esqueleto A', 'Esqueleto B']);
@@ -137,7 +137,7 @@ describe('finishEncounter', () => {
     cleric.downed = true;
     getCombatant(combat, 'warrior').hp = 10;
     finishEncounter(run, combat, CAMPAIGN);
-    expect(run.heroes.map((h) => h.hp)).toEqual([10, 1, 16]);
+    expect(run.heroes.map((h) => h.hp)).toEqual([10, 1, 16, 18]);
     expect(run.encounterIndex).toBe(1);
     expect(run.status).toBe('inProgress');
   });
@@ -168,8 +168,15 @@ describe('applyRest', () => {
     hero(run, 'cleric').hp = 1;
     run.fate.current = 0;
     applyRest(run);
-    expect(run.heroes.map((h) => h.hp)).toEqual([28, 22, 16]);
+    expect(run.heroes.map((h) => h.hp)).toEqual([28, 22, 16, 18]);
     expect(run.fate).toEqual({ current: 3, max: 3, sides: 4 });
+  });
+  it('only attack abilities carry sneak damage', () => {
+    for (const ability of CAMPAIGN.abilities) {
+      if (ability.sneakDamage === undefined) continue;
+      expect(ability.roll).toBe('attack');
+      expect(ability.target).toBe('singleEnemy');
+    }
   });
 });
 
@@ -214,6 +221,22 @@ describe('applyReward', () => {
     expect(hero(run, 'warrior')).toMatchObject({ hp: 30, maxHp: 30 });
     expect(hero(run, 'mage')).toMatchObject({ hp: 18, maxHp: 18 });
     expect(hero(run, 'cleric')).toMatchObject({ hp: 24, maxHp: 24 });
+    expect(hero(run, 'rogue')).toMatchObject({ hp: 20, maxHp: 20 });
+  });
+
+  it('holy water raises max HP of every hero', () => {
+    const run = createRun(CAMPAIGN);
+    const before = run.heroes.map((h) => h.maxHp);
+    applyReward(run, reward('holyWater'));
+    expect(run.heroes.map((h) => h.maxHp)).toEqual(before.map((m) => m + 2));
+  });
+
+  it('rogue rewards', () => {
+    const run = createRun(CAMPAIGN);
+    applyReward(run, reward('rogueEdge'));
+    expect(hero(run, 'rogue')).toMatchObject({ attackBonus: 6, damageBonus: 2 });
+    applyReward(run, reward('rogueCloak'));
+    expect(hero(run, 'rogue')).toMatchObject({ ac: 15, maxHp: 24, hp: 24 });
   });
 });
 

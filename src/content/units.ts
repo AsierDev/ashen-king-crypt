@@ -140,6 +140,34 @@ export const ABILITIES: AbilityDef[] = [
     summon: { enemyId: 'skeleton', count: 2 },
     usesPerCombat: 1,
   },
+  {
+    id: 'dagger',
+    name: 'Puñal',
+    description: 'Golpe furtivo: ventaja y +2d6 de daño si el objetivo sufre Debilidad.',
+    target: 'singleEnemy',
+    roll: 'attack',
+    damage: { count: 1, sides: 6, bonus: 2 },
+    sneakDamage: { count: 2, sides: 6, bonus: 0 },
+  },
+  {
+    id: 'hamstring',
+    name: 'Corte Bajo',
+    description: 'Si impacta, causa Debilidad 2 turnos. 3 usos por combate.',
+    target: 'singleEnemy',
+    roll: 'attack',
+    damage: { count: 1, sides: 4, bonus: 2 },
+    applyStatus: { status: 'weakened', duration: 2 },
+    usesPerCombat: 3,
+  },
+  {
+    id: 'blindingPowder',
+    name: 'Polvo Cegador',
+    description: 'Todos los enemigos sufren Debilidad 1 turno. 1 uso por combate.',
+    target: 'allEnemies',
+    roll: 'none',
+    applyStatus: { status: 'weakened', duration: 1 },
+    usesPerCombat: 1,
+  },
 ];
 
 export const HEROES: HeroDef[] = [
@@ -172,6 +200,16 @@ export const HEROES: HeroDef[] = [
     attackBonus: 5,
     initiativeBonus: 2,
     abilityIds: ['fireBolt', 'magicMissile', 'fireball'],
+  },
+  {
+    id: 'rogue',
+    name: 'Nerea',
+    className: 'Pícara',
+    maxHp: 18,
+    ac: 14,
+    attackBonus: 5,
+    initiativeBonus: 3,
+    abilityIds: ['dagger', 'hamstring', 'blindingPowder'],
   },
 ];
 

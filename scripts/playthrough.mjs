@@ -52,7 +52,7 @@ while (Date.now() - started < 15 * 60 * 1000) {
     if (!useFate) { await clickAt(472, 302); await page.waitForTimeout(150); }
     await clickAt(364, 302);
     await page.waitForTimeout(150);
-    for (const x of [390, 460, 530, 600, 250, 180, 110]) await clickAt(x, 190);
+    for (const x of [390, 460, 530, 600, 272, 210, 148, 86]) await clickAt(x, 190);
   }
   await page.waitForTimeout(400);
 }
