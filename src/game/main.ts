@@ -7,6 +7,7 @@ import { Combat } from './scenes/Combat';
 import { Interlude } from './scenes/Interlude';
 import { End } from './scenes/End';
 import { installMuteKey } from './audio';
+import { installMobileFullscreen, installViewportFit } from './viewport';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -36,10 +37,8 @@ const StartGame = (parent: string) => {
     installMuteKey();
 
     const game = new Game({ ...config, parent });
-    // Al girar el móvil o mostrar/ocultar las barras del navegador, el tamaño visible cambia tarde: reajustar.
-    const refresh = () => window.setTimeout(() => game.scale.refresh(), 250);
-    window.addEventListener('orientationchange', refresh);
-    window.visualViewport?.addEventListener('resize', refresh);
+    installViewportFit(game);
+    installMobileFullscreen();
     return game;
 
 }
