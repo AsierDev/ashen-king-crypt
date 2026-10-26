@@ -61,7 +61,7 @@ export class Interlude extends Scene
         new TextButton(
             this, 320, ys[0], 600, 44,
             `${TEXTS.labels.rest}\n${TEXTS.labels.restDesc}`,
-            choose(() => applyRest(run)),
+            choose(() => applyRest(run, rng)),
             16, FONT_BODY,
         );
         offer.forEach((reward: RewardDef, i: number) => {

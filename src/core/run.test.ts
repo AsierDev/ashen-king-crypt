@@ -239,14 +239,33 @@ describe('LEVELS', () => {
 });
 
 describe('applyRest', () => {
-  it('heals everyone fully and refills fate', () => {
+  it('heals 50% + 1d6 without exceeding the max and adds 1 fate', () => {
     const run = createRun(CAMPAIGN);
     hero(run, 'warrior').hp = 10;
     hero(run, 'cleric').hp = 1;
     run.fate.current = 0;
-    applyRest(run);
-    expect(run.heroes.map((h) => h.hp)).toEqual([28, 22, 16, 18]);
-    expect(run.fate).toEqual({ current: 3, max: 3, sides: 4 });
+    applyRest(run, createSequenceRng([3, 6, 1, 2]));
+    expect(run.heroes.map((h) => h.hp)).toEqual([27, 18, 16, 18]);
+    expect(run.fate).toEqual({ current: 1, max: 3, sides: 4 });
+  });
+  it('does not raise fate above the max', () => {
+    const run = createRun(CAMPAIGN);
+    run.fate.current = 3;
+    applyRest(run, createSequenceRng([1, 1, 1, 1]));
+    expect(run.fate.current).toBe(3);
+  });
+  it('rolls one d6 per hero even at full health', () => {
+    const run = createRun(CAMPAIGN);
+    expect(() => applyRest(run, createSequenceRng([1, 1, 1, 1]))).not.toThrow();
+    expect(() => applyRest(createRun(CAMPAIGN), createSequenceRng([1, 1, 1]))).toThrow();
+  });
+  it('rounds half of the max HP down', () => {
+    const run = createRun(CAMPAIGN);
+    const warrior = hero(run, 'warrior');
+    warrior.maxHp = 33;
+    warrior.hp = 1;
+    applyRest(run, createSequenceRng([1, 1, 1, 1]));
+    expect(warrior.hp).toBe(18);
   });
   it('only attack abilities carry sneak damage', () => {
     for (const ability of CAMPAIGN.abilities) {
@@ -330,7 +349,7 @@ describe('full run simulation', () => {
       finishEncounter(run, combat, CAMPAIGN);
       if (run.status === 'inProgress') {
         if (spendFate) applyReward(run, rollRewardOffer(run, CAMPAIGN, rng)[0]);
-        else applyRest(run);
+        else applyRest(run, rng);
       }
     }
     return { status: run.status, actions };

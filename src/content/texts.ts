@@ -39,7 +39,7 @@ export const TEXTS = {
     soundOn: 'Sonido: sí (M)',
     soundOff: 'Sonido: no (M)',
     rest: 'Descansar',
-    restDesc: 'Todo el grupo se cura (también los caídos) y recupera el Destino.',
+    restDesc: 'Cada héroe recupera 50 % de sus PG máx. + 1d6 (también los caídos). Destino +1.',
     chooseAbility: '{name}: elige una habilidad.',
     chooseTarget: 'Elige un objetivo.',
     cancel: 'Cancelar',

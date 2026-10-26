@@ -92,11 +92,11 @@ function pickReward(run: RunState, offer: [RewardDef, RewardDef]): RewardDef {
 
 function interlude(run: RunState, policy: InterludePolicy, rng: Rng): void {
   const offer = rollRewardOffer(run, CAMPAIGN, rng);
-  if (policy === 'alwaysRest') return applyRest(run);
+  if (policy === 'alwaysRest') return applyRest(run, rng);
   if (policy === 'neverRest') return applyReward(run, pickReward(run, offer));
   const party = run.heroes.reduce((a, h) => a + h.hp, 0) / run.heroes.reduce((a, h) => a + h.maxHp, 0);
   const anyCritical = run.heroes.some((h) => h.hp <= 1 || h.hp / h.maxHp < 0.3);
-  if (party < 0.6 || anyCritical || run.fate.current === 0) applyRest(run);
+  if (party < 0.6 || anyCritical || run.fate.current === 0) applyRest(run, rng);
   else applyReward(run, pickReward(run, offer));
 }
 

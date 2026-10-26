@@ -1,4 +1,5 @@
 import { createCombat, createCombatant } from './combat';
+import { rollDie } from './dice';
 import type { Rng } from './rng';
 import type {
   AbilityDef,
@@ -161,9 +162,11 @@ export function nextLevelXp(run: RunState, campaign: Campaign): number | null {
   return next ? next.xp : null;
 }
 
-export function applyRest(run: RunState): void {
-  for (const hero of run.heroes) hero.hp = hero.maxHp;
-  run.fate.current = run.fate.max;
+export function applyRest(run: RunState, rng: Rng): void {
+  for (const hero of run.heroes) {
+    hero.hp = Math.min(hero.maxHp, hero.hp + Math.floor(hero.maxHp / 2) + rollDie(rng, 6));
+  }
+  run.fate.current = Math.min(run.fate.max, run.fate.current + 1);
 }
 
 export function rollRewardOffer(_run: RunState, campaign: Campaign, rng: Rng): [RewardDef, RewardDef] {
