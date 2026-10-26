@@ -3,6 +3,10 @@
 RPG por turnos con dados d20 para navegador, hecho con Phaser 4, TypeScript y Vite. Sin backend: el build es un sitio
 estático.
 
+## Jugar
+
+Versión publicada: https://asierdev.github.io/ashen-king-crypt/ (se despliega con GitHub Actions en cada push a `main`).
+
 ## Requisitos
 
 - Node.js 22.12 o superior.
