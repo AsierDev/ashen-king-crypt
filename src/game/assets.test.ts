@@ -10,6 +10,13 @@ describe('UNIT_ASSETS', () => {
     }
   });
 
+  it('todos los héroes tienen hoja de sprites', () => {
+    for (const def of CAMPAIGN.heroes) {
+      expect(UNIT_ASSETS[def.id].sheet, def.id).toBeDefined();
+      expect(UNIT_ASSETS[def.id].art, def.id).toBeDefined();
+    }
+  });
+
   it('define placeholders válidos y desplazamiento de barra', () => {
     for (const asset of Object.values(UNIT_ASSETS)) {
       expect(asset.placeholder.width).toBeGreaterThan(0);

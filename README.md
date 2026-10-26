@@ -42,6 +42,7 @@ Cada unidad declara en `src/game/assets.ts` el tamaño de frame y la caja visibl
 | `warrior` | Guerrero (Bran) | `public/assets/sprites/warrior/` |
 | `cleric` | Clériga (Isolda) | `public/assets/sprites/cleric/` |
 | `mage` | Mago (Teodric) | `public/assets/sprites/mage/` |
+| `rogue` | Pícara (Nerea) | `public/assets/sprites/rogue/` |
 | `skeleton` | Esqueleto | `public/assets/sprites/skeleton/` |
 | `ghoul` | Necrófago | `public/assets/sprites/ghoul/` |
 | `cultist` | Sectario | `public/assets/sprites/cultist/` |
