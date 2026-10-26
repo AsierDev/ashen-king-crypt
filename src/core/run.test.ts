@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAMPAIGN, REWARDS } from '../content/campaign';
+import { CAMPAIGN, LEVELS, REWARDS } from '../content/campaign';
 import { TEXTS } from '../content/texts';
 import { runEnemyTurn } from './ai';
 import {
@@ -17,6 +17,8 @@ import {
   applyRest,
   createRun,
   finishEncounter,
+  gainXp,
+  nextLevelXp,
   rollRewardOffer,
   startEncounter,
 } from './run';
@@ -94,6 +96,7 @@ describe('createRun', () => {
     expect(run.fate).toEqual({ current: 3, max: 3, sides: 4 });
     expect(run.encounterIndex).toBe(0);
     expect(run.status).toBe('inProgress');
+    expect(run).toMatchObject({ xp: 0, level: 1, lastLevelUp: null });
   });
 });
 
@@ -101,11 +104,18 @@ describe('startEncounter', () => {
   it('builds the first combat from the run', () => {
     const run = createRun(CAMPAIGN);
     const { combat } = startEncounter(run, CAMPAIGN, createRng(1));
-    expect(combat.combatants).toHaveLength(6);
+    expect(combat.combatants).toHaveLength(7);
     const enemies = combat.combatants.filter((c) => c.side === 'enemy');
-    expect(enemies.map((c) => c.id)).toEqual(['skeleton-1', 'skeleton-2']);
-    expect(enemies.map((c) => c.name)).toEqual(['Esqueleto A', 'Esqueleto B']);
+    expect(enemies.map((c) => c.id)).toEqual(['skeleton-1', 'skeleton-2', 'skeleton-3']);
+    expect(enemies.map((c) => c.name)).toEqual(['Esqueleto A', 'Esqueleto B', 'Esqueleto C']);
     expect(combat.fate).toBe(run.fate);
+  });
+
+  it('applies level bonuses to the combatants', () => {
+    const run = createRun(CAMPAIGN);
+    run.xp = 100;
+    gainXp(run, CAMPAIGN);
+    expect(getCombatant(startEncounter(run, CAMPAIGN, createRng(1)).combat, 'warrior').maxHp).toBe(33);
   });
 
   it('applies permanent upgrades to the combatants', () => {
@@ -155,9 +165,76 @@ describe('finishEncounter', () => {
     expect(run.status).toBe('won');
   });
 
+  const win = (run: ReturnType<typeof createRun>) => finishEncounter(run, endedCombat('victory', run), CAMPAIGN);
+
+  it('grants xp and levels up the party across victories', () => {
+    const run = createRun(CAMPAIGN);
+    win(run);
+    expect(run).toMatchObject({ xp: 100, level: 1, lastLevelUp: null });
+    win(run);
+    expect(run).toMatchObject({ xp: 200, level: 2 });
+    expect(run.lastLevelUp?.level).toBe(2);
+    expect(hero(run, 'warrior').maxHp).toBe(33);
+    expect(hero(run, 'rogue').maxHp).toBe(22);
+    win(run);
+    expect(run.lastLevelUp).toBeNull();
+    win(run);
+    expect(run).toMatchObject({ xp: 400, level: 3 });
+    expect(hero(run, 'warrior').attackBonus).toBe(6);
+    expect(hero(run, 'mage').maxHp).toBe(22);
+  });
+
+  it('keeps a fallen cleric at 1 HP plus the level bonus', () => {
+    const run = createRun(CAMPAIGN);
+    win(run);
+    const combat = endedCombat('victory', run);
+    const cleric = getCombatant(combat, 'cleric');
+    cleric.hp = 0;
+    cleric.downed = true;
+    finishEncounter(run, combat, CAMPAIGN);
+    expect(hero(run, 'cleric')).toMatchObject({ hp: 5, maxHp: 26 });
+  });
+
+  it('gives no xp for the boss or a defeat', () => {
+    const boss = createRun(CAMPAIGN);
+    boss.encounterIndex = 4;
+    win(boss);
+    expect(boss).toMatchObject({ status: 'won', xp: 0 });
+    const lost = createRun(CAMPAIGN);
+    finishEncounter(lost, endedCombat('defeat', lost), CAMPAIGN);
+    expect(lost.xp).toBe(0);
+  });
+
   it('throws when the combat has not ended', () => {
     const run = createRun(CAMPAIGN);
     expect(() => finishEncounter(run, endedCombat(null, run), CAMPAIGN)).toThrow();
+  });
+});
+
+describe('nextLevelXp', () => {
+  it('returns the xp of the next level or null', () => {
+    const run = createRun(CAMPAIGN);
+    expect(nextLevelXp(run, CAMPAIGN)).toBe(200);
+    run.level = 2;
+    expect(nextLevelXp(run, CAMPAIGN)).toBe(400);
+    run.level = 3;
+    expect(nextLevelXp(run, CAMPAIGN)).toBeNull();
+  });
+});
+
+describe('LEVELS', () => {
+  it('has increasing levels and xp and valid effects for every hero', () => {
+    const heroIds = CAMPAIGN.heroes.map((h) => h.id);
+    LEVELS.forEach((def, i) => {
+      if (i > 0) {
+        expect(def.level).toBeGreaterThan(LEVELS[i - 1].level);
+        expect(def.xp).toBeGreaterThan(LEVELS[i - 1].xp);
+      }
+      for (const id of heroIds) {
+        expect(def.effects.some((e) => 'heroId' in e && e.heroId === id)).toBe(true);
+      }
+      for (const e of def.effects) if ('heroId' in e) expect(heroIds).toContain(e.heroId);
+    });
   });
 });
 

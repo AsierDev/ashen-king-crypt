@@ -1,11 +1,11 @@
-import type { Campaign, EncounterDef, RewardDef } from '../core/run';
+import type { Campaign, EncounterDef, LevelDef, RewardDef } from '../core/run';
 import { ABILITIES, ENEMIES, HEROES } from './units';
 
 export const ENCOUNTERS: EncounterDef[] = [
-  { id: 'antechamber', title: 'La Antesala', enemyIds: ['skeleton', 'skeleton'], isBoss: false },
-  { id: 'ossuary', title: 'El Osario', enemyIds: ['skeleton', 'skeleton', 'ghoul'], isBoss: false },
-  { id: 'chapel', title: 'La Capilla Profanada', enemyIds: ['cultist', 'skeleton', 'skeleton'], isBoss: false },
-  { id: 'catacombs', title: 'Las Catacumbas', enemyIds: ['ghoul', 'ghoul', 'cultist'], isBoss: false },
+  { id: 'antechamber', title: 'La Antesala', enemyIds: ['skeleton', 'skeleton', 'skeleton'], isBoss: false },
+  { id: 'ossuary', title: 'El Osario', enemyIds: ['skeleton', 'skeleton', 'ghoul', 'ghoul'], isBoss: false },
+  { id: 'chapel', title: 'La Capilla Profanada', enemyIds: ['cultist', 'skeleton', 'skeleton', 'skeleton'], isBoss: false },
+  { id: 'catacombs', title: 'Las Catacumbas', enemyIds: ['ghoul', 'ghoul', 'cultist', 'skeleton'], isBoss: false },
   { id: 'throne', title: 'El Trono de Ceniza', enemyIds: ['ashenKing'], isBoss: true },
 ];
 
@@ -102,6 +102,26 @@ export const REWARDS: RewardDef[] = [
   },
 ];
 
+const levelHp: LevelDef['effects'] = [
+  { kind: 'maxHp', heroId: 'warrior', amount: 5 },
+  { kind: 'maxHp', heroId: 'cleric', amount: 4 },
+  { kind: 'maxHp', heroId: 'mage', amount: 3 },
+  { kind: 'maxHp', heroId: 'rogue', amount: 4 },
+];
+
+export const LEVELS: LevelDef[] = [
+  { level: 2, xp: 200, summary: 'PG máx.: Bran +5, Isolda +4, Teodric +3, Nerea +4.', effects: levelHp },
+  {
+    level: 3,
+    xp: 400,
+    summary: '+1 al ataque para todos y PG máx. +5/+4/+3/+4.',
+    effects: [
+      ...['warrior', 'cleric', 'mage', 'rogue'].map((heroId) => ({ kind: 'attackBonus' as const, heroId, amount: 1 })),
+      ...levelHp,
+    ],
+  },
+];
+
 export const CAMPAIGN: Campaign = {
   heroes: HEROES,
   enemies: ENEMIES,
@@ -109,4 +129,6 @@ export const CAMPAIGN: Campaign = {
   encounters: ENCOUNTERS,
   rewards: REWARDS,
   fateStart: { max: 3, sides: 4 },
+  xpPerEncounter: 100,
+  levels: LEVELS,
 };

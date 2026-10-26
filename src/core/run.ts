@@ -31,6 +31,13 @@ export interface RewardDef {
   effects: RewardEffect[];
 }
 
+export interface LevelDef {
+  level: number;
+  xp: number;
+  summary: string;
+  effects: RewardEffect[];
+}
+
 export interface Campaign {
   heroes: HeroDef[];
   enemies: EnemyDef[];
@@ -38,6 +45,8 @@ export interface Campaign {
   encounters: EncounterDef[];
   rewards: RewardDef[];
   fateStart: { max: number; sides: number };
+  xpPerEncounter: number;
+  levels: LevelDef[];
 }
 
 export interface HeroProgress {
@@ -53,6 +62,9 @@ export interface RunState {
   heroes: HeroProgress[];
   fate: FatePool;
   encounterIndex: number;
+  xp: number;
+  level: number;
+  lastLevelUp: LevelDef | null;
   status: 'inProgress' | 'won' | 'lost';
 }
 
@@ -72,6 +84,9 @@ export function createRun(campaign: Campaign): RunState {
       sides: campaign.fateStart.sides,
     },
     encounterIndex: 0,
+    xp: 0,
+    level: 1,
+    lastLevelUp: null,
     status: 'inProgress',
   };
 }
@@ -121,8 +136,29 @@ export function finishEncounter(run: RunState, combat: CombatState, campaign: Ca
     if (!combatant) throw new Error(`hero not in combat: ${progress.heroId}`);
     progress.hp = combatant.downed || combatant.hp <= 0 ? 1 : combatant.hp;
   }
-  if (campaign.encounters[run.encounterIndex].isBoss) run.status = 'won';
-  else run.encounterIndex++;
+  if (campaign.encounters[run.encounterIndex].isBoss) {
+    run.status = 'won';
+  } else {
+    gainXp(run, campaign);
+    run.encounterIndex++;
+  }
+}
+
+export function gainXp(run: RunState, campaign: Campaign): void {
+  run.xp += campaign.xpPerEncounter;
+  run.lastLevelUp = null;
+  for (const def of campaign.levels) {
+    if (def.level > run.level && run.xp >= def.xp) {
+      applyEffects(run, def.effects);
+      run.level = def.level;
+      run.lastLevelUp = def;
+    }
+  }
+}
+
+export function nextLevelXp(run: RunState, campaign: Campaign): number | null {
+  const next = campaign.levels.find((def) => def.level > run.level);
+  return next ? next.xp : null;
 }
 
 export function applyRest(run: RunState): void {
@@ -145,7 +181,11 @@ function heroProgress(run: RunState, heroId: string): HeroProgress {
 }
 
 export function applyReward(run: RunState, reward: RewardDef): void {
-  for (const effect of reward.effects) {
+  applyEffects(run, reward.effects);
+}
+
+function applyEffects(run: RunState, effects: RewardEffect[]): void {
+  for (const effect of effects) {
     switch (effect.kind) {
       case 'attackBonus':
         heroProgress(run, effect.heroId).attackBonus += effect.amount;

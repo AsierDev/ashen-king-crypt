@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { CAMPAIGN } from '../../content/campaign';
-import { TEXTS } from '../../content/texts';
-import { applyReward, applyRest, rollRewardOffer } from '../../core/run';
+import { TEXTS, fill } from '../../content/texts';
+import { applyReward, applyRest, nextLevelXp, rollRewardOffer } from '../../core/run';
 import type { RewardDef } from '../../core/run';
 import { getSession } from '../session';
 import { markScene } from '../smokeMarker';
@@ -26,6 +26,21 @@ export class Interlude extends Scene
         this.add
             .text(320, 24, TEXTS.labels.interlude, { fontFamily: FONT_UI, fontSize: '16px', color: COLORS.gold })
             .setOrigin(0.5);
+
+        const next = nextLevelXp(run, CAMPAIGN);
+        const levelLine = next === null
+            ? fill(TEXTS.labels.levelMax, { level: run.level })
+            : fill(TEXTS.labels.levelLine, { level: run.level, xp: run.xp, next });
+        this.add
+            .text(320, 40, levelLine, { fontFamily: FONT_UI, fontSize: '8px', color: COLORS.textDim })
+            .setOrigin(0.5);
+        if (run.lastLevelUp) {
+            this.add
+                .text(320, 124, fill(TEXTS.labels.levelUp, { level: run.lastLevelUp.level, summary: run.lastLevelUp.summary }), {
+                    fontFamily: FONT_BODY, fontSize: '16px', color: COLORS.gold, wordWrap: { width: 600 },
+                })
+                .setOrigin(0.5);
+        }
 
         const body = { fontFamily: FONT_BODY, fontSize: '16px', color: COLORS.text };
         run.heroes.forEach((p, i) => {
